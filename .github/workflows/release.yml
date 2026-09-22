@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'   # v0.5.0-beta, v1.0.0 vb. her versiyonlu tag'de tetiklenir
 
+permissions:
+  contents: write   # GitHub Releases oluşturmak ve DMG yüklemek için zorunlu
+
 jobs:
   build-dmg:
     name: Build macOS DMG
