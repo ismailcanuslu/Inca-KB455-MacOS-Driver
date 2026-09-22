@@ -1,0 +1,81 @@
+# ============================
+# macOS
+# ============================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# ============================
+# Xcode
+# ============================
+# Build products
+build/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Per-user Xcode config
+xcuserdata/
+
+# Scheme auto-generation
+*.xcscmblueprint
+*.xccheckout
+
+# Backups
+*.orig
+*.bak
+*.pbxproj.bak
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+.package.resolved
+
+# Pods (if used)
+Pods/
+*.xcworkspace/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# ============================
+# Provisioning / Signing
+# ============================
+*.mobileprovision
+*.provisionprofile
+*.p12
+*.cer
+*.certSigningRequest
+ExportOptions.plist
+
+# ============================
+# DMG / Archive outputs
+# ============================
+*.dmg
+*.pkg
+*.zip
+dist/
+
+# ============================
+# Logs / Crash reports
+# ============================
+*.log

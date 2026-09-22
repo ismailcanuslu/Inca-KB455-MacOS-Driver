@@ -7,12 +7,28 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		000000000000000000000120 /* inca-klavye.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "inca-klavye.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000120 /* Inca Empousa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Inca Empousa.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		000000000000000000000015 /* Exceptions for "inca-klavye" folder in "inca-klavye" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"indows-app/app/Text/en/text.xml",
+				"indows-app/app/Text/German/text.xml",
+				"indows-app/app/Text/text.xml",
+				"indows-app/app/Text/Turkish/text.xml",
+			);
+			target = 000000000000000100000000 /* inca-klavye */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		000000000000000000000010 /* inca-klavye */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				000000000000000000000015 /* Exceptions for "inca-klavye" folder in "inca-klavye" target */,
+			);
 			path = "inca-klavye";
 			sourceTree = "<group>";
 		};
@@ -38,7 +54,7 @@
 		000000000000000000000020 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				000000000000000000000120 /* inca-klavye.app */,
+				000000000000000000000120 /* Inca Empousa.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,7 +77,7 @@
 			);
 			name = "inca-klavye";
 			productName = MyApp;
-			productReference = 000000000000000000000120 /* inca-klavye.app */;
+			productReference = 000000000000000000000120 /* Inca Empousa.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -250,12 +266,20 @@
 		000000000000000111000000 /* Debug configuration for PBXNativeTarget "inca-klavye" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				DEVELOPMENT_TEAM = N3RZP7UW2B;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "inca-klavye/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Inca Empousa";
+				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
+				INFOPLIST_KEY_CFBundleName = "Inca Empousa";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Inca Empousa, klavyenin batarya durumunu okumak için Bluetooth kullanır.";
+				INFOPLIST_KEY_NSInputMonitoringUsageDescription = "Inca Empousa klavye donanım kontrolcüsüne erişmek ve aydınlatma ayarlarını uygulamak için Giriş İzleme izni gereklidir.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -269,8 +293,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "devplaceholder.$(PROJECT_UNIQUE_VALUE:identifier).$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ismailcanuslu.empousa;
+				PRODUCT_NAME = "Inca Empousa";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -287,12 +311,20 @@
 		000000000000000112000000 /* Release configuration for PBXNativeTarget "inca-klavye" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				DEVELOPMENT_TEAM = N3RZP7UW2B;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "inca-klavye/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Inca Empousa";
+				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
+				INFOPLIST_KEY_CFBundleName = "Inca Empousa";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Inca Empousa, klavyenin batarya durumunu okumak için Bluetooth kullanır.";
+				INFOPLIST_KEY_NSInputMonitoringUsageDescription = "Inca Empousa klavye donanım kontrolcüsüne erişmek ve aydınlatma ayarlarını uygulamak için Giriş İzleme izni gereklidir.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -306,8 +338,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "devplaceholder.$(PROJECT_UNIQUE_VALUE:identifier).$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ismailcanuslu.empousa;
+				PRODUCT_NAME = "Inca Empousa";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
