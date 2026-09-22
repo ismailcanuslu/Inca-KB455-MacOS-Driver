@@ -1,0 +1,128 @@
+name: 🏗️ Build & Release DMG
+
+on:
+  push:
+    tags:
+      - 'v*'   # v0.5.0-beta, v1.0.0 vb. her versiyonlu tag'de tetiklenir
+
+jobs:
+  build-dmg:
+    name: Build macOS DMG
+    runs-on: macos-15          # En güncel Xcode ile
+
+    steps:
+      # ── 1. Kaynak kodunu çek ───────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Xcode versiyonunu seç ──────────────────────────────────────────
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      # ── 3. Sürüm numarasını tag'den çıkar ────────────────────────────────
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"          # örn: v0.5.0-beta
+          VERSION="${TAG#v}"                # örn: 0.5.0-beta
+          SHORT="${VERSION%%-*}"            # örn: 0.5.0
+          echo "tag=$TAG"          >> $GITHUB_OUTPUT
+          echo "version=$VERSION"  >> $GITHUB_OUTPUT
+          echo "short=$SHORT"      >> $GITHUB_OUTPUT
+          echo "dmg_name=Inca-Empousa-${TAG}.dmg" >> $GITHUB_OUTPUT
+
+      # ── 4. Ad-hoc imzayla Release build al ───────────────────────────────
+      - name: Build Archive (ad-hoc signing)
+        run: |
+          xcodebuild \
+            -scheme inca-klavye \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/Inca-Empousa.xcarchive" \
+            archive \
+            SDKROOT=macosx \
+            SUPPORTED_PLATFORMS=macosx \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            DEVELOPMENT_TEAM="" \
+            | xcpretty --color || true
+          
+          # xcpretty başarısız olsa bile archive'ı kontrol et
+          ls "$RUNNER_TEMP/Inca-Empousa.xcarchive/Products/Applications/"
+
+      # ── 5. .app dosyasını ara klasöre kopyala ────────────────────────────
+      - name: Prepare DMG staging
+        run: |
+          STAGING="$RUNNER_TEMP/dmg-staging"
+          mkdir -p "$STAGING"
+          cp -R \
+            "$RUNNER_TEMP/Inca-Empousa.xcarchive/Products/Applications/Inca Empousa.app" \
+            "$STAGING/"
+          ln -sf /Applications "$STAGING/Applications"
+
+      # ── 6. DMG oluştur ────────────────────────────────────────────────────
+      - name: Create DMG
+        run: |
+          DMG_NAME="${{ steps.version.outputs.dmg_name }}"
+          DMG_PATH="$RUNNER_TEMP/$DMG_NAME"
+          
+          hdiutil create \
+            -volname "Inca Empousa ${{ steps.version.outputs.version }}" \
+            -srcfolder "$RUNNER_TEMP/dmg-staging" \
+            -ov \
+            -format UDZO \
+            -imagekey zlib-level=9 \
+            "$DMG_PATH"
+          
+          echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
+          echo "DMG_NAME=$DMG_NAME" >> $GITHUB_ENV
+          ls -lh "$DMG_PATH"
+
+      # ── 7. GitHub Release oluştur & DMG'yi yükle ─────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Inca Empousa ${{ steps.version.outputs.version }}"
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'rc') }}
+          body: |
+            ## Inca Empousa IKG-455 macOS Driver — ${{ steps.version.outputs.version }}
+
+            Hobi amaçlı, tersine mühendislik ile geliştirilmiş **gayri resmi** macOS sürücüsü.
+
+            ---
+
+            ### ⚠️ Bilinen Sorunlar
+
+            | Sorun | Durum |
+            |-------|--------|
+            | 🔴 **2.4G alıcı klavyeyi soft-brick edebilir** | Aktif geliştirme |
+            | 🟡 Pil yüzdesi doğru değil | Araştırılıyor |
+            | 🟡 Knob modu otomatik güncellenmiyor | Araştırılıyor |
+            | 🟡 Mac/Windows mod algılama hatalı | Araştırılıyor |
+            | 🔵 Hassasiyet (actuation) ayarı eklenmedi | Bilinçli karar — orijinal yazılımda da bug var |
+
+            > **🔌 Yalnızca Type-C USB kullanın!** 2.4G kablosuz bağlantı şu an güvenli değil.
+
+            ---
+
+            ### 📦 Kurulum
+
+            1. Aşağıdan `${{ env.DMG_NAME }}` dosyasını indirin
+            2. DMG'yi açın → `Inca Empousa.app`'i **Applications** klasörüne sürükleyin
+            3. **Sistem Ayarları → Gizlilik ve Güvenlik → Giriş İzleme** → Inca Empousa'ya izin verin
+            4. Klavyeyi **Type-C USB** ile bağlayın
+
+            > Gatekeeper uyarısı alırsanız: `Ctrl + Tıkla → Aç`
+
+            ---
+
+            ### 🔬 Bu Proje Hakkında
+
+            Inca'nın bu klavye için resmi macOS sürücüsü yok. USB HID trafiğini Wireshark ile sniff edip, `OemDrv.exe` dosyasını Ghidra ile tersine mühendislik yaparak protokolü çözdüm. UI Apple Music & Liquid Glass tasarım dilinden ilham alıyor. Tamamen hobi projesi. ☕
+
+          files: |
+            ${{ env.DMG_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
