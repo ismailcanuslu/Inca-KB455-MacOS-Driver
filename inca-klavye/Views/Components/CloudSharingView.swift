@@ -1,245 +1,198 @@
 import SwiftUI
 
-struct CloudProfileItem: Identifiable {
-    let id = UUID()
-    var name: String
-    var author: String
-    var date: String
-    var downloads: Int
-    var likes: Int
-    var category: String
-    var description: String
-    var tags: [String]
-}
-
+/// Bulut Paylaşım Merkezi (Sharing Center)
+/// Mock data yerine "Yapım Aşamasında / Çok Yakında" bilgilendirme ve gelecek özellikler vitrini.
 struct CloudSharingView: View {
     @ObservedObject var keyboardManager: KeyboardManager
     @ObservedObject var loc = LocalizationManager.shared
 
-    @State private var selectedFilter: String = "Tümü"
-    @State private var downloadedProfiles: Set<UUID> = []
-    @State private var appliedProfileId: UUID? = nil
-    @State private var showUploadModal: Bool = false
-    @State private var showLoginModal: Bool = false
-    @State private var username: String = "ismailcanuslu"
-    @State private var isUserLoggedIn: Bool = true
-
-    let sampleProfiles = [
-        CloudProfileItem(
-            name: "Cyberpunk 2077 Neon",
-            author: "NeonBlade",
-            date: "2026-03-12",
-            downloads: 1420,
-            likes: 388,
-            category: "Işıklandırma",
-            description: "Gece sürüşü sarı ve camgöbeği neon teması. Yan şeritler turkuaz nefes alma.",
-            tags: ["RGB", "Cyberpunk", "Canlı"]
-        ),
-        CloudProfileItem(
-            name: "CS2 Pro FPS Setup",
-            author: "s1mple_fan",
-            date: "2026-02-28",
-            downloads: 2890,
-            likes: 742,
-            category: "Oyun & Makro",
-            description: "WASD ve bomba tuşları sarı aydınlatmalı, Jumpthrow makrosu Space+C atanmış.",
-            tags: ["FPS", "CS2", "Düşük Gecikme"]
-        ),
-        CloudProfileItem(
-            name: "Apple Music Pastel",
-            author: "DesignPro",
-            date: "2026-01-15",
-            downloads: 980,
-            likes: 215,
-            category: "Minimalist",
-            description: "Gözü yormayan pastel pembe, mor ve lavanta gradyanları. Ofis çalışması için ideal.",
-            tags: ["Apple", "Minimal", "Pastel"]
-        ),
-        CloudProfileItem(
-            name: "Matrix Code Stream",
-            author: "Morpheus99",
-            date: "2026-03-01",
-            downloads: 1650,
-            likes: 430,
-            category: "Işıklandırma",
-            description: "Yukarıdan aşağıya yeşil dijital yağmur efekti ve donanımsal 1000Hz polling.",
-            tags: ["Matrix", "Yeşil", "Kod"]
-        )
-    ]
+    @State private var isPulsing: Bool = false
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 24) {
-                // Başlık & Profilim Butonu
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(loc.tr("tc_yun1", default: "Bulut Paylaşım Merkezi"))
-                            .font(.system(size: 26, weight: .bold))
-                        Text(loc.tr("tc_yun35", default: "Topluluk tarafından paylaşılan klavye profilleri ve makroları keşfedin"))
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
+            VStack(alignment: .leading, spacing: 28) {
+                // 1. Üst Başlık
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(loc.tr("tc_yun1", default: "Paylaşım Merkezi"))
+                        .font(.system(size: 26, weight: .bold))
+                    Text("Topluluk profilleri, makrolar ve özel RGB ışık efektleri bulut paylaşım platformu")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
 
-                    Spacer()
-
-                    // Kullanıcı Durum Rozeti
-                    HStack(spacing: 8) {
+                // 2. Ana "Yapım Aşamasında" Hero Kartı
+                VStack(spacing: 20) {
+                    // Parlayan Bulut İkonu
+                    ZStack {
                         Circle()
-                            .fill(LinearGradient(colors: [Color.pink, Color.purple], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(width: 28, height: 28)
-                            .overlay(Text("İC").font(.system(size: 11, weight: .bold)).foregroundColor(.white))
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.3), Color.purple.opacity(0.15)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 96, height: 96)
+                            .scaleEffect(isPulsing ? 1.08 : 0.96)
+                            .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: isPulsing)
 
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text(username)
-                                .font(.system(size: 12, weight: .semibold))
-                            Text(loc.tr("tc_yun37", default: "Kişisel Panel"))
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 76, height: 76)
+                            .shadow(color: Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.5), radius: 16, x: 0, y: 6)
 
-                        Button(action: {
-                            showUploadModal = true
-                        }) {
-                            Label(loc.tr("tc_yun33", default: "Buluta Yükle"), systemImage: "icloud.and.arrow.up.fill")
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.regular)
+                        Image(systemName: "icloud.and.arrow.up.fill")
+                            .font(.system(size: 34, weight: .bold))
+                            .foregroundColor(.white)
                     }
-                }
+                    .padding(.top, 12)
 
-                // Arama ve Filtre Çubuğu
-                HStack(spacing: 12) {
-                    ForEach(["Tümü", "Işıklandırma", "Oyun & Makro", "Minimalist"], id: \.self) { filter in
-                        Button(action: {
-                            selectedFilter = filter
-                        }) {
-                            Text(filter)
-                                .font(.system(size: 13, weight: selectedFilter == filter ? .semibold : .regular))
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 7)
-                                .background(selectedFilter == filter ? Color(red: 0.98, green: 0.18, blue: 0.38) : Color.white.opacity(0.06))
-                                .foregroundColor(selectedFilter == filter ? .white : .primary)
-                                .cornerRadius(8)
-                        }
-                        .buttonStyle(.plain)
+                    // Durum Rozeti
+                    HStack(spacing: 6) {
+                        Image(systemName: "hammer.fill")
+                            .font(.system(size: 11))
+                        Text("YAPIM AŞAMASINDA • ÇOK YAKINDA")
+                            .font(.system(size: 11.5, weight: .bold))
+                            .tracking(1.0)
                     }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 6)
+                    .background(Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.15))
+                    .foregroundColor(Color(red: 0.98, green: 0.18, blue: 0.38))
+                    .clipShape(Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.3), lineWidth: 1)
+                    )
+
+                    // Açıklama Metinleri
+                    VStack(spacing: 8) {
+                        Text("Bulut Paylaşım Merkezi Geliştiriliyor")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+
+                        Text("Empousa oyuncularının kendi hazırladıkları 126 tuş bağımsız RGB aydınlatma temalarını, profesyonel oyun makrolarını ve performans profillerini birbirleriyle paylaşabileceği bulut altyapımız üzerinde çalışıyoruz.")
+                            .font(.system(size: 13.5))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(4)
+                            .frame(maxWidth: 580)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 14)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(28)
+                .background(.ultraThinMaterial)
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.15), Color.white.opacity(0.04)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
 
-                // Profil Kartları Izgarası (Grid)
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)], spacing: 16) {
-                    ForEach(sampleProfiles) { item in
-                        VStack(alignment: .leading, spacing: 14) {
-                            // Kart Başlığı
-                            HStack {
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(item.name)
-                                        .font(.system(size: 16, weight: .bold))
-                                    Text("Yazar: @\(item.author) • \(item.date)")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
+                // 3. Gelecek Özellikler Vitrini (Roadmap Cards)
+                VStack(alignment: .leading, spacing: 14) {
+                    Label("YAKINDA EKLENECEK ÖZELLİKLER", systemImage: "sparkles")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.secondary)
+                        .tracking(1.2)
 
-                                Spacer()
+                    HStack(spacing: 16) {
+                        featurePreviewCard(
+                            icon: "paintpalette.fill",
+                            title: "Topluluk Aydınlatma Temaları",
+                            description: "Diğer kullanıcıların tasarladığı özel ışık efektlerini ve renk paletlerini tek tıkla klavyenize aktarın.",
+                            accentColor: Color(red: 0.98, green: 0.18, blue: 0.38)
+                        )
 
-                                Text(item.category)
-                                    .font(.system(size: 10, weight: .bold))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.white.opacity(0.08))
-                                    .cornerRadius(6)
-                            }
+                        featurePreviewCard(
+                            icon: "bolt.square.fill",
+                            title: "Makro & Kısayol Kütüphanesi",
+                            description: "Espor ve üretkenlik için popüler oyun ve yazılımlara özel hazırlanmış optimize tuş dizilimleri.",
+                            accentColor: Color.purple
+                        )
 
-                            Text(item.description)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .lineLimit(2)
-
-                            // Etiketler
-                            HStack(spacing: 6) {
-                                ForEach(item.tags, id: \.self) { tag in
-                                    Text("#\(tag)")
-                                        .font(.caption2)
-                                        .foregroundColor(.accentColor)
-                                }
-                            }
-
-                            Divider()
-
-                            // İndirme & Beğeni İstatistikleri ve İndir Butonu
-                            HStack {
-                                HStack(spacing: 12) {
-                                    Label("\(item.downloads)", systemImage: "arrow.down.circle")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-
-                                    Label("\(item.likes)", systemImage: "heart.fill")
-                                        .font(.caption2)
-                                        .foregroundColor(.pink)
-                                }
-
-                                Spacer()
-
-                                if appliedProfileId == item.id {
-                                    Text("Klavyede Aktif")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundColor(.green)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 5)
-                                        .background(Color.green.opacity(0.15))
-                                        .clipShape(Capsule())
-                                } else {
-                                    Button(action: {
-                                        withAnimation {
-                                            downloadedProfiles.insert(item.id)
-                                            appliedProfileId = item.id
-                                        }
-                                    }) {
-                                        Label(loc.tr("tc_yun7", default: "İndir & Uygula"), systemImage: "arrow.down.to.line")
-                                            .font(.system(size: 11, weight: .semibold))
-                                    }
-                                    .buttonStyle(.bordered)
-                                }
-                            }
-                        }
-                        .padding(18)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(16)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(appliedProfileId == item.id ? Color.green : Color.white.opacity(0.08), lineWidth: appliedProfileId == item.id ? 2 : 1)
+                        featurePreviewCard(
+                            icon: "arrow.triangle.2.circlepath.icloud.fill",
+                            title: "Bulut Yedekleme & Senkronizasyon",
+                            description: "Kendi klavye konfigürasyonlarınızı ve tuş profillerinizi bulutta güvenle saklayın.",
+                            accentColor: Color.blue
                         )
                     }
                 }
-            }
-            .padding(24)
-        }
-        .sheet(isPresented: $showUploadModal) {
-            VStack(alignment: .leading, spacing: 20) {
-                Text(loc.tr("tc_yun33", default: "Klavyeni Buluta Paylaş"))
-                    .font(.title2.bold())
 
-                Text(loc.tr("tc_yun9", default: "Profilin açıklamasını ve kullanılan aydınlatma modunu belirtin"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                // 4. Bilgilendirme Alt Notu
+                HStack(spacing: 12) {
+                    Image(systemName: "info.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.secondary)
 
-                TextField("Profil Adı", text: .constant("Özel INCA Kurulumum"))
-                    .textFieldStyle(.roundedBorder)
+                    Text("Paylaşım Merkezi bir sonraki güncelleme ile aktif olacaktır. Cihazınızı ve aydınlatmalarınızı sol menüdeki sekmelerden tam yetkiyle özelleştirmeye devam edebilirsiniz.")
+                        .font(.system(size: 12.5))
+                        .foregroundColor(.secondary)
+                        .lineSpacing(2)
 
-                TextField("Açıklama (Hangi oyunlar veya amaç için?)", text: .constant("Valorant ve kod yazma odaklı mor-cyan tema."))
-                    .textFieldStyle(.roundedBorder)
-
-                HStack {
                     Spacer()
-                    Button("İptal") { showUploadModal = false }
-                        .buttonStyle(.bordered)
-                    Button(loc.tr("tc_yun41", default: "Gönder & Paylaş")) {
-                        showUploadModal = false
-                    }
-                    .buttonStyle(.borderedProminent)
                 }
+                .padding(16)
+                .background(Color.white.opacity(0.04))
+                .cornerRadius(12)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.06), lineWidth: 1))
             }
             .padding(24)
-            .frame(width: 440)
         }
+        .onAppear {
+            isPulsing = true
+        }
+    }
+
+    // MARK: - Gelecek Özellik Kartı Bileşeni
+    private func featurePreviewCard(icon: String, title: String, description: String, accentColor: Color) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(accentColor.opacity(0.16))
+                    .frame(width: 42, height: 42)
+
+                Image(systemName: icon)
+                    .font(.system(size: 19, weight: .bold))
+                    .foregroundColor(accentColor)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.primary)
+
+                Text(description)
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, minHeight: 160, alignment: .topLeading)
+        .background(.ultraThinMaterial)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
     }
 }

@@ -9,10 +9,11 @@ struct ContentView: View {
 
     enum SettingsTab: String, CaseIterable, Identifiable {
         case lighting = "tc_kb1"
+        case customLighting = "tab_custom_lighting"
+        case music = "tc_music1"
         case keybinds = "tc_msg18"
         case tftScreen = "tc_screen11"
         case macro = "tc_mac_def"
-        case music = "tc_music1"
         case cloud = "tc_yun1"
         case settings = "tc_config"
         case manual = "tc_manual"
@@ -21,16 +22,17 @@ struct ContentView: View {
         var id: String { self.rawValue }
 
         static var sidebarTabs: [SettingsTab] {
-            [.lighting, .keybinds, .macro, .music, .cloud, .settings]
+            [.lighting, .customLighting, .music, .keybinds, .macro, .cloud, .settings, .manual]
         }
         
         func title(loc: LocalizationManager) -> String {
             switch self {
-            case .lighting: return loc.tr("tc_kb1", default: "Aydınlatma")
+            case .lighting: return loc.tr("tab_lighting", default: "Aydınlatma")
+            case .customLighting: return loc.tr("tab_custom_lighting", default: "Özelleştirilmiş Aydınlatma")
+            case .music: return loc.tr("tab_music_lighting", default: "Müzik Aydınlatması")
             case .keybinds: return loc.tr("tc_msg18", default: "Tuş Atamaları")
             case .tftScreen: return loc.tr("tc_screen11", default: "TFT Ekran & GIF")
             case .macro: return loc.tr("tc_mac_def", default: "Makro Stüdyosu")
-            case .music: return loc.tr("tc_music1", default: "Müzik & Ses")
             case .cloud: return loc.tr("tc_yun1", default: "Paylaşım Merkezi")
             case .settings: return loc.tr("tc_config", default: "Cihaz & Ayarlar")
             case .manual: return loc.tr("tc_manual", default: "Kullanma Kılavuzu")
@@ -41,10 +43,11 @@ struct ContentView: View {
         var icon: String {
             switch self {
             case .lighting: return "sparkles"
+            case .customLighting: return "paintpalette.fill"
+            case .music: return "waveform.path.ecg"
             case .keybinds: return "keyboard.fill"
             case .tftScreen: return "tv.fill"
             case .macro: return "bolt.square.fill"
-            case .music: return "waveform.path.ecg"
             case .cloud: return "icloud.fill"
             case .settings: return "gearshape.2.fill"
             case .manual: return "book.closed.fill"
@@ -116,8 +119,8 @@ struct ContentView: View {
                         }
                     }
                     .tag(tab)
-                    .disabled(!keyboardManager.isConnected && tab != .settings)
-                    .opacity(!keyboardManager.isConnected && tab != .settings ? 0.4 : 1.0)
+                    .disabled(!keyboardManager.isConnected && tab != .settings && tab != .manual)
+                    .opacity(!keyboardManager.isConnected && tab != .settings && tab != .manual ? 0.4 : 1.0)
                 }
                 .listStyle(.sidebar)
                 .scrollContentBackground(.hidden)
@@ -203,14 +206,16 @@ struct ContentView: View {
                         switch selectedTab {
                     case .lighting:
                         LightingView(keyboardManager: keyboardManager)
+                    case .customLighting:
+                        CustomLightingView(keyboardManager: keyboardManager)
+                    case .music:
+                        MusicVisualizerView(keyboardManager: keyboardManager)
                     case .keybinds:
                         KeybindsView(keyboardManager: keyboardManager)
                     case .tftScreen:
                         TftScreenView(keyboardManager: keyboardManager)
                     case .macro:
                         MacroStudioView(keyboardManager: keyboardManager)
-                    case .music:
-                        MusicVisualizerView(keyboardManager: keyboardManager)
                     case .cloud:
                         CloudSharingView(keyboardManager: keyboardManager)
                     case .settings:
@@ -227,22 +232,8 @@ struct ContentView: View {
         }
     }
     .toolbar {
-            ToolbarItemGroup(placement: .navigation) {
-                Button(action: {
-                    withAnimation { selectedTab = .manual }
-                }) {
-                    Image(systemName: "questionmark.circle")
-                }
-                .help(loc.tr("tc_manual", default: "Kullanma Kılavuzu & Donanım Kısayolları"))
-
-                Button(action: {
-                    withAnimation { selectedTab = .about }
-                }) {
-                    Image(systemName: "info.circle")
-                }
-                .help(loc.tr("tc_about", default: "Hakkında"))
-
-                // Döner Tekerlek (Knob) Modu Rozeti (Info butonunun hemen sağında, sidenav'a yakın)
+            ToolbarItem(placement: .navigation) {
+                // Döner Tekerlek (Knob) Modu Rozeti (Soru işareti veya info balonu olmadan, bağımsız rozet)
                 if keyboardManager.isConnected {
                     HStack(spacing: 5) {
                         Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
@@ -251,12 +242,11 @@ struct ContentView: View {
                         Text(keyboardManager.wheelMode.badgeTitle(loc: loc))
                             .font(.system(size: 11, weight: .semibold))
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4.5)
                     .background(Color.white.opacity(0.08))
                     .cornerRadius(7)
                     .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.white.opacity(0.12), lineWidth: 1))
-                    .help(loc.tr("settings_knob_title", default: "Döner Tekerlek") + ": \(keyboardManager.wheelMode.localizedName(loc: loc))")
                 }
             }
 
@@ -267,6 +257,19 @@ struct ContentView: View {
             }
 
             ToolbarItemGroup(placement: .automatic) {
+                // Soru İşareti - Kullanma Kılavuzu & Donanım Kısayolları
+                Button(action: {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        selectedTab = .manual
+                    }
+                }) {
+                    Image(systemName: selectedTab == .manual ? "questionmark.circle.fill" : "questionmark.circle")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(selectedTab == .manual ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
+                }
+                .buttonStyle(.plain)
+                .help(loc.tr("tc_manual", default: "Kullanma Kılavuzu & Donanım Kısayolları"))
+
                 // Hızlı Dil Değiştirici
                 Menu {
                     ForEach(AppLanguage.allCases) { lang in

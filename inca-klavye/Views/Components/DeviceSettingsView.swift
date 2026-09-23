@@ -103,9 +103,9 @@ struct DeviceSettingsView: View {
                     }
                 }
 
-                // 3. PİL VE GÜÇ SAĞLIĞI KARTI
+                // 3. PİL VE UYKU KARTI
                 VStack(alignment: .leading, spacing: 16) {
-                    Label(loc.tr("tc_msg5", default: "GÜÇ VE PİL SAĞLIĞI").uppercased(), systemImage: "battery.100.bolt")
+                    Label(loc.tr("settings_battery_and_sleep", default: "PİL VE UYKU").uppercased(), systemImage: "battery.100.bolt")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.secondary)
                         .tracking(1.2)
@@ -262,101 +262,19 @@ struct DeviceSettingsView: View {
                         ))
                     }
 
-                    // Donanım Yanıt Süresi & Döner Tekerlek Ayarları
-                    HStack(spacing: 20) {
-                        // Tuş Tepki Filtresi (Debounce / LowDelay)
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                Text(loc.tr("settings_debounce_title", default: "Tuş Tepki Süresi (Debounce)"))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Menu {
-                                    Button("2 ms (Ultra Hızlı Espor)") { selectDebounce(2) }
-                                    Button("4 ms (Hızlı)") { selectDebounce(4) }
-                                    Button("8 ms (Dengeli - Önerilen)") { selectDebounce(8) }
-                                    Button("16 ms (Kararlı)") { selectDebounce(16) }
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        let currentVal = pendingDebounceTime ?? keyboardManager.debounceTimeMs
-                                        Text(debounceLabel(currentVal))
-                                            .font(.system(size: 13, weight: .bold))
-                                            .foregroundColor(pendingDebounceTime != nil ? .orange : .primary)
-                                        Image(systemName: "chevron.up.chevron.down")
-                                            .font(.caption2)
-                                    }
-                                }
-                                .menuStyle(.borderlessButton)
-                            }
-                            
-                            let displayVal = pendingDebounceTime ?? keyboardManager.debounceTimeMs
-                            Text(debounceLabel(displayVal))
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(pendingDebounceTime != nil ? .orange : .primary)
-                            Text(loc.tr("settings_debounce_desc", default: "Tuş vuruş filtreleme süresi. Düşük değerler gecikmeyi azaltır."))
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(16)
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(pendingDebounceTime != nil ? Color.orange.opacity(0.4) : Color.white.opacity(0.08), lineWidth: 1))
-
-                        // Döner Tekerlek (Knob / Wheel) Donanım Rehber Kartı
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Text(loc.tr("settings_knob_title", default: "Döner Tekerlek (Knob)"))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Text("3-5 sn Basılı Tutun")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 3)
-                                    .background(Color.pink.opacity(0.15))
-                                    .foregroundColor(.pink)
-                                    .clipShape(Capsule())
-                            }
-                            
-                            HStack(spacing: 10) {
-                                ZStack {
-                                    Circle()
-                                        .fill(LinearGradient(colors: [Color.pink, Color.purple], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                        .frame(width: 36, height: 36)
-                                    Image(systemName: "dial.medium.fill")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundColor(.white)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(loc.tr("manual_knob_hold_action", default: "Ses Kontrolcüsü ⟷ Aydınlatma Kontrolcüsü"))
-                                        .font(.system(size: 15, weight: .bold))
-                                    Text(loc.tr("manual_knob_badge", default: "Donanımsal Geçiş") + " (3 Işık Kırpması)")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            
-                            Text("Tekerleğe dik biçimde 3-5 saniye basılı tuttuğunuzda klavye ışıkları 3 defa kırparak ses kontrolcüsü ve aydınlatma kontrolcüsü arasında donanımsal geçiş yapar.")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .lineSpacing(3)
-                        }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(16)
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.08), lineWidth: 1))
-                    }
-
                     // Kaydedilmemiş Donanım Ayarları Barı
                     if hasUnsavedHardwareSettings {
                         unsavedHardwareBar
-                            .transition(.move(edge: .top).combined(with: .opacity))
+                            .transition(.asymmetric(
+                                insertion: .opacity.combined(with: .scale(scale: 0.95)).combined(with: .move(edge: .top)),
+                                removal: .opacity.combined(with: .scale(scale: 0.95))
+                            ))
                     } else if let feedback = hardwareSettingsSavedFeedback {
                         hardwareSuccessBanner(feedback)
-                            .transition(.move(edge: .top).combined(with: .opacity))
+                            .transition(.asymmetric(
+                                insertion: .opacity.combined(with: .scale(scale: 0.95)).combined(with: .move(edge: .top)),
+                                removal: .opacity.combined(with: .scale(scale: 0.95))
+                            ))
                     }
 
                     // Düşük Pil Uyarısı veya Tam Şarj Bilgilendirme Kartı
@@ -734,12 +652,14 @@ struct DeviceSettingsView: View {
     private func commitSingleSleepTimeout(_ sec: Int) {
         keyboardManager.setSleepTimeout(seconds: sec)
         pendingSleepTimeout = nil
-        hasUnsavedHardwareSettings = pendingDebounceTime != nil
-        hardwareSettingsSavedFeedback = "Otomatik uyku süresi \(sleepLabel(sec)) olarak ayarlandı!"
+        hasUnsavedHardwareSettings = false
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) {
+            hardwareSettingsSavedFeedback = "Otomatik uyku süresi \(sleepLabel(sec)) olarak ayarlandı!"
+        }
         keyboardManager.triggerSavedSuccess(message: "Uyku: \(sleepLabel(sec))")
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-            withAnimation {
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) {
                 hardwareSettingsSavedFeedback = nil
             }
         }
@@ -861,7 +781,7 @@ struct DeviceSettingsView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Kaydedilmemiş Donanım Ayarları Var")
                         .font(.system(size: 13, weight: .bold))
-                    Text("Klavyeyi spamlamamak için ayarlar hafızada tutulur. 'Ayarları Kaydet' butonuna basarak çipe aktarabilirsiniz.")
+                    Text("Değişiklikleri uygulamak için 'Ayarları Kaydet' butonuna basabilirsiniz.")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }

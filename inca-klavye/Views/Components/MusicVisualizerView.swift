@@ -1,6 +1,9 @@
 import SwiftUI
 import Combine
 
+/// Tab 3: "Müzik Aydınlatması"
+/// Canlı ekolayzer spektrumu, Işık Efekti alanındaki gibi kare kartlar (LazyVGrid)
+/// ve ses/ritim hassasiyeti ayarları.
 struct MusicVisualizerView: View {
     @ObservedObject var keyboardManager: KeyboardManager
     @ObservedObject var loc = LocalizationManager.shared
@@ -16,19 +19,23 @@ struct MusicVisualizerView: View {
 
     let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
-    let musicEffects = [
-        (id: 1, name: "Spektrum Dalgalanma", icon: "waveform.path.ecg"),
-        (id: 2, name: "Zıplayan Bloklar", icon: "chart.bar.fill"),
-        (id: 3, name: "Merkezden Dışa Ritim", icon: "circle.circle.fill"),
-        (id: 4, name: "Nabız & Parlama", icon: "bolt.heart.fill")
+    let musicEffects: [(id: Int, name: String, subtitle: String, icon: String)] = [
+        (1, "Spektrum Dalgalanma", "Frekans dalgaları", "waveform.path.ecg"),
+        (2, "Zıplayan Bloklar", "Ekolayzer bas vuruşları", "chart.bar.fill"),
+        (3, "Merkezden Dışa Ritim", "Dairesel ses yayılımı", "circle.circle.fill"),
+        (4, "Nabız & Parlama", "Müzikle nabız atışı", "bolt.heart.fill"),
+        (5, "Dinamik Akış", "Yumuşak ritmik akış", "water.waves"),
+        (6, "Yıldız Patlaması", "Yüksek ses tepe ışıltısı", "sparkles")
     ]
+
+    private let accentColor = Color(red: 0.98, green: 0.18, blue: 0.38)
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
                 // Başlık
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(loc.tr("tc_music1", default: "Müzik & Ses Senkronizasyonu"))
+                    Text(loc.tr("tab_music_lighting", default: "Müzik Aydınlatması"))
                         .font(.system(size: 26, weight: .bold))
                     Text("Sistem sesleri ve çalan müziğin ritmini Empousa klavye RGB aydınlatmasıyla senkronize edin")
                         .font(.subheadline)
@@ -62,7 +69,7 @@ struct MusicVisualizerView: View {
                                 .fill(
                                     LinearGradient(
                                         colors: [
-                                            Color(red: 0.98, green: 0.18, blue: 0.38),
+                                            accentColor,
                                             Color.purple,
                                             Color.blue
                                         ],
@@ -82,39 +89,91 @@ struct MusicVisualizerView: View {
                 .cornerRadius(18)
                 .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.08), lineWidth: 1))
 
-                // Ritim Efekt Modu Seçici
+                // Ritim Efekt Modu Seçici (Kare Kartlar LazyVGrid - Işık Efektleri ile Birebir Tasarım)
                 VStack(alignment: .leading, spacing: 14) {
-                    Text(loc.tr("tc_kb1", default: "Işık Efekti Modu"))
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.secondary)
-                        .tracking(1.2)
+                    HStack {
+                        Text(loc.tr("tc_kb1", default: "MÜZİK RİTİM EFEKTLERİ").uppercased())
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.secondary)
+                            .tracking(1.2)
 
-                    HStack(spacing: 12) {
+                        Spacer()
+
+                        // Klavyeye Gönder Butonu
+                        Button(action: {
+                            sendMusicEffectToKeyboard()
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "paperplane.fill")
+                                    .font(.system(size: 11, weight: .bold))
+                                Text(loc.tr("island_save_btn", default: "Klavyeye Gönder"))
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 14)
+                            .foregroundColor(.white)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(LinearGradient(colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple], startPoint: .leading, endPoint: .trailing))
+                            )
+                            .shadow(color: Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.35), radius: 6, x: 0, y: 2)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Seçili müzik ritim efektini klavyeye gönderir")
+                    }
+
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 200), spacing: 14)], spacing: 14) {
                         ForEach(musicEffects, id: \.id) { effect in
+                            let isSelected = selectedEffect == effect.id
+
                             Button(action: {
-                                withAnimation(.spring(response: 0.3)) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     selectedEffect = effect.id
                                 }
+                                markUnsaved()
                             }) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Image(systemName: effect.icon)
-                                        .font(.title3)
-                                        .foregroundColor(selectedEffect == effect.id ? .white : Color(red: 0.98, green: 0.18, blue: 0.38))
+                                VStack(alignment: .leading, spacing: 10) {
+                                    // Kare Efekt Kapağı
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .fill(
+                                                isSelected
+                                                ? LinearGradient(colors: [accentColor, accentColor.opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                                : LinearGradient(colors: [Color.white.opacity(0.12), Color.white.opacity(0.04)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                            )
+                                            .frame(height: 90)
 
-                                    Text(effect.name)
-                                        .font(.system(size: 13, weight: selectedEffect == effect.id ? .bold : .medium))
-                                        .foregroundColor(selectedEffect == effect.id ? .white : .primary)
+                                        Image(systemName: effect.icon)
+                                            .font(.system(size: 32))
+                                            .foregroundColor(isSelected ? .white : .primary.opacity(0.85))
+                                            .shadow(color: isSelected ? Color.black.opacity(0.3) : .clear, radius: 4)
+                                    }
+
+                                    // Efekt Başlığı & Açıklaması
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(effect.name)
+                                            .font(.system(size: 13, weight: isSelected ? .bold : .medium))
+                                            .foregroundColor(isSelected ? accentColor : .primary)
+                                            .lineLimit(1)
+
+                                        Text(effect.subtitle)
+                                            .font(.system(size: 10, weight: .regular))
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(1)
+                                    }
+                                    .padding(.horizontal, 4)
+                                    .padding(.bottom, 6)
                                 }
-                                .padding(14)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(8)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .fill(selectedEffect == effect.id ? Color(red: 0.98, green: 0.18, blue: 0.38) : Color.white.opacity(0.04))
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(isSelected ? accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor).opacity(0.4))
                                 )
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(selectedEffect == effect.id ? Color(red: 0.98, green: 0.18, blue: 0.38) : Color.white.opacity(0.08), lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .stroke(isSelected ? accentColor : Color.white.opacity(0.08), lineWidth: isSelected ? 2 : 1)
                                 )
+                                .shadow(color: isSelected ? accentColor.opacity(0.3) : Color.clear, radius: 10, y: 4)
                             }
                             .buttonStyle(.plain)
                         }
@@ -123,7 +182,7 @@ struct MusicVisualizerView: View {
 
                 // Kazanç ve Ses Ayarları Kartı
                 VStack(alignment: .leading, spacing: 18) {
-                    Text(loc.tr("tc_config", default: "Ses & Ritim Hassasiyeti"))
+                    Text(loc.tr("tc_config", default: "Ses & Ritim Hassasiyeti").uppercased())
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.secondary)
                         .tracking(1.2)
@@ -137,7 +196,7 @@ struct MusicVisualizerView: View {
                                 Spacer()
                                 Text("%\(Int(gain))")
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                    .foregroundColor(Color(red: 0.98, green: 0.18, blue: 0.38))
+                                    .foregroundColor(accentColor)
                             }
 
                             Slider(value: $gain, in: 0...100, step: 1)
@@ -189,7 +248,6 @@ struct MusicVisualizerView: View {
             .padding(24)
         }
         .onReceive(timer) { _ in
-            // Çubukların canlı rastgele oynaması (Ses simülasyonu)
             if isListening {
                 for i in 0..<barHeights.count {
                     let base = CGFloat.random(in: 15...115)
@@ -197,5 +255,28 @@ struct MusicVisualizerView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Komut Gönderme & Bekletme
+    private func sendMusicEffectToKeyboard() {
+        keyboardManager.triggerSavingStatus(message: "Klavyeye Gönderiliyor...")
+        if let mode = MusicSyncMode(rawValue: UInt8(selectedEffect)) {
+            keyboardManager.applyMusicSync(mode: mode)
+        }
+        keyboardManager.triggerSavedSuccess(message: "Müzik Aydınlatması Klavyeye Gönderildi!")
+    }
+
+    private func markUnsaved() {
+        let effectName = musicEffects.first(where: { $0.id == selectedEffect })?.name ?? "Müzik Ritmi"
+        keyboardManager.triggerUnsavedStatus(
+            description: "Müzik: \(effectName)",
+            onCommit: {
+                sendMusicEffectToKeyboard()
+            },
+            onDiscard: {
+                keyboardManager.activeMusicMode = nil
+                keyboardManager.triggerIdleStatus()
+            }
+        )
     }
 }

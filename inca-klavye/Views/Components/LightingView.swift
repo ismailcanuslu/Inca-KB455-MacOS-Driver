@@ -8,7 +8,7 @@ enum LightingSection: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
     func title(loc: LocalizationManager = .shared) -> String {
         switch self {
-        case .mainKeys: return loc.tr("tc_kb1", default: "Aydınlatma Efektleri")
+        case .mainKeys: return loc.tr("lighting_section_effects", default: "Aydınlatma Efektleri")
         case .customLighting: return loc.tr("lighting_custom_header", default: "Kişisel Aydınlatma")
         case .musicSync: return loc.tr("tc_music1", default: "Müzik Ritmi")
         }
@@ -74,7 +74,7 @@ struct LightingView: View {
                     keyboardManager: keyboardManager,
                     currentColor: isMulticolor ? Color.purple : keyboardColor,
                     activeEffectName: currentActiveTitle,
-                    selectedEffect: selectedEffect,
+                    selectedEffect: activeLightingEffect,
                     isMulticolor: isMulticolor
                 )
 
@@ -103,6 +103,28 @@ struct LightingView: View {
                         .buttonStyle(.plain)
                     }
                     Spacer()
+
+                    // Klavyeye Gönder Butonu (Kullanıcı dilediğinde komutları klavyeye gönderir)
+                    Button(action: {
+                        commitChanges()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "paperplane.fill")
+                                .font(.system(size: 11, weight: .bold))
+                            Text(loc.tr("island_save_btn", default: "Klavyeye Gönder"))
+                                .font(.system(size: 12, weight: .bold))
+                        }
+                        .padding(.vertical, 7)
+                        .padding(.horizontal, 14)
+                        .foregroundColor(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(LinearGradient(colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple], startPoint: .leading, endPoint: .trailing))
+                        )
+                        .shadow(color: Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.35), radius: 6, x: 0, y: 2)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Seçili aydınlatma ve yan şerit ayarlarını klavyeye gönderir")
 
                     // Klavyeden Donanım Aydınlatma Durumunu Yenile
                     Button(action: {
@@ -154,6 +176,11 @@ struct LightingView: View {
                 }
             }
         }
+        .onAppear {
+            if let effect = LightingEffect(rawValue: keyboardManager.activeEffectId) {
+                selectedEffect = effect
+            }
+        }
         .onReceive(keyboardManager.$activeEffectId) { newEffectId in
             if let effect = LightingEffect(rawValue: newEffectId), selectedEffect != effect {
                 withAnimation(.easeInOut(duration: 0.2)) {
@@ -163,15 +190,21 @@ struct LightingView: View {
         }
     }
 
+    private var activeLightingEffect: LightingEffect {
+        LightingEffect(rawValue: keyboardManager.activeEffectId) ?? selectedEffect
+    }
+
     private var currentActiveTitle: String {
-        switch activeSection {
-        case .mainKeys:
-            return selectedEffect.name
-        case .customLighting:
-            return "Kişisel Tuş Matrisi (Özel)"
-        case .musicSync:
-            return keyboardManager.activeMusicMode?.name ?? "Müzik Ritmi"
+        if let music = keyboardManager.activeMusicMode {
+            return music.name
         }
+        if keyboardManager.activeEffectId == LightingEffect.custom.rawValue || keyboardManager.activeEffectId == 21 {
+            return loc.tr("tab_custom_lighting", default: "Özelleştirilmiş Aydınlatma")
+        }
+        if let active = LightingEffect(rawValue: keyboardManager.activeEffectId) {
+            return active.localizedName(loc: loc)
+        }
+        return selectedEffect.localizedName(loc: loc)
     }
 
     private var filteredEffects: [LightingEffect] {
@@ -734,7 +767,7 @@ struct LightingView: View {
 
             // Klavyeye Gönder / Donanım Hafızasına Kaydet Barı
             HStack(spacing: 16) {
-                // Donanım Hafızası İkon Rozeti (macOS / Control Center stili)
+                // Klavyeye Kaydet İkon Rozeti (macOS / Control Center stili)
                 ZStack {
                     RoundedRectangle(cornerRadius: 11)
                         .fill(Color.white.opacity(0.06))
@@ -742,14 +775,14 @@ struct LightingView: View {
                             RoundedRectangle(cornerRadius: 11)
                                 .stroke(Color.white.opacity(0.12), lineWidth: 1)
                         )
-                    Image(systemName: "memorychip")
+                    Image(systemName: "square.and.arrow.down.fill")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(Color(red: 0.98, green: 0.18, blue: 0.38))
                 }
                 .frame(width: 42, height: 42)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(loc.tr("lighting_hw_write_title", default: "Donanım Hafızasına Yaz"))
+                    Text(loc.tr("lighting_hw_write_title", default: "Klavyeye Kaydet"))
                         .font(.system(size: 13.5, weight: .semibold))
                         .foregroundColor(.primary)
 
@@ -761,7 +794,7 @@ struct LightingView: View {
                             Text(loc.tr("lighting_hw_wired_badge", default: "Kablolu Bağlantı"))
                                 .font(.system(size: 11.5, weight: .medium))
                                 .foregroundColor(.green.opacity(0.9))
-                            Text(loc.tr("lighting_hw_wired_desc", default: "• 126 tuşun RGB renk matrisi doğrudan klavyenin MCU çipine aktarılır."))
+                            Text(loc.tr("lighting_hw_wired_desc", default: "• 126 tuşun renk ayarları doğrudan klavyenize aktarılır."))
                                 .font(.system(size: 11.5))
                                 .foregroundColor(.secondary)
                         } else {
@@ -771,7 +804,7 @@ struct LightingView: View {
                             Text(loc.tr("lighting_hw_wireless_badge", default: "Kablosuz Mod"))
                                 .font(.system(size: 11.5, weight: .medium))
                                 .foregroundColor(.orange.opacity(0.9))
-                            Text(loc.tr("lighting_hw_wireless_desc", default: "• Tam renkli donanım aktarımı için Type-C kablosu önerilir."))
+                            Text(loc.tr("lighting_hw_wireless_desc", default: "• Hızlı aktarım için Type-C kablosu önerilir."))
                                 .font(.system(size: 11.5))
                                 .foregroundColor(.secondary)
                         }
@@ -1143,13 +1176,12 @@ struct LightingView: View {
                     }
 
                     Spacer()
-                    // Çok Renkli modu açıksa color picker'ı gizle
+                    // Çok Renkli modu kapalıysa anlaşılır Özel Renk / HEX butonu
                     if !isMulticolor.wrappedValue {
-                        ColorPicker(loc.tr("lighting_custom_color", default: "Özel Renk Seç"), selection: selectedColor)
-                            .labelsHidden()
-                            .onChange(of: selectedColor.wrappedValue) { _, _ in
-                                onColorChange()
-                            }
+                        QuickColorPickerButton(
+                            selectedColor: selectedColor,
+                            onColorChange: onColorChange
+                        )
                     }
                 }
 
@@ -1208,6 +1240,7 @@ struct LightingView: View {
                             }
                         }
                         .buttonStyle(.plain)
+                        .zIndex(hoveredColorName == "Çok Renkli (Gökkuşağı)" ? 60 : 1)
                         .onHover { isHovered in
                             withAnimation(.easeInOut(duration: 0.15)) {
                                 hoveredColorName = isHovered ? "Çok Renkli (Gökkuşağı)" : nil
@@ -1263,6 +1296,7 @@ struct LightingView: View {
                                 }
                         }
                         .buttonStyle(.plain)
+                        .zIndex(hoveredColorName == preset.name ? 60 : 1)
                         .onHover { isHovered in
                             withAnimation(.easeInOut(duration: 0.15)) {
                                 hoveredColorName = isHovered ? preset.name : nil
@@ -1271,12 +1305,15 @@ struct LightingView: View {
                         .help(preset.name)
                     }
                 }
+                .padding(.top, 10)
             }
             .padding(16)
             .background(.ultraThinMaterial)
             .cornerRadius(16)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.08), lineWidth: 1))
+            .zIndex(30)
         }
+        .zIndex(20)
     }
 
     private func applyMainSettings() {
@@ -1344,9 +1381,10 @@ struct LightingView: View {
     }
 
     private func commitChanges() {
-        keyboardManager.triggerSavingStatus(message: "Işıklar Kaydediliyor...")
+        keyboardManager.triggerSavingStatus(message: "Klavyeye Gönderiliyor...")
         applyMainSettings()
-        keyboardManager.triggerSavedSuccess(message: "Işık Ayarları Kaydedildi!")
+        applySideSettings()
+        keyboardManager.triggerSavedSuccess(message: "Işık Ayarları Klavyeye Gönderildi!")
     }
 
     private func discardChanges() {

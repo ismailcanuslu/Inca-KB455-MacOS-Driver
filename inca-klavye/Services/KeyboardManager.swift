@@ -5,6 +5,7 @@ import IOKit
 import IOKit.hid
 import Combine
 import os
+import SwiftUI
 
 class KeyboardManager: ObservableObject {
     private static let osLogger = Logger(subsystem: "devplaceholder.Inca-Empousa", category: "Hardware")
@@ -79,6 +80,7 @@ class KeyboardManager: ObservableObject {
         case unsavedChanges(description: String) // "Kaydedilmemiş Değişiklikler Var"
         case saving(message: String)             // "Değişiklikler Kaydediliyor..."
         case saved(message: String)              // "Başarıyla Kaydedildi!"
+        case wirelessWarning(title: String, message: String) // "Kablosuz Bağlantı Sorunu (2.4G)"
     }
 
     @Published var islandStatus: IslandStatus = .idle
@@ -86,26 +88,39 @@ class KeyboardManager: ObservableObject {
     var onCommitChangesRequested: (() -> Void)? = nil
     var onDiscardChangesRequested: (() -> Void)? = nil
 
+    // 2.4G Kablosuz İletişim Durumu (IC2481 RF watchdog)
+    @Published var isWirelessUnresponsive: Bool = false
+    var wirelessWatchdogTimer: DispatchWorkItem? = nil
+    var lastWirelessOperationRetry: (() -> Void)? = nil
+
     func triggerUnsavedStatus(description: String, onCommit: (() -> Void)? = nil, onDiscard: (() -> Void)? = nil) {
         DispatchQueue.main.async {
             self.onCommitChangesRequested = onCommit
             self.onDiscardChangesRequested = onDiscard
-            self.islandStatus = .unsavedChanges(description: description)
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.74)) {
+                self.islandStatus = .unsavedChanges(description: description)
+            }
         }
     }
 
     func triggerSavingStatus(message: String = "Cihaza Gönderiliyor...") {
         DispatchQueue.main.async {
-            self.islandStatus = .saving(message: message)
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.74)) {
+                self.islandStatus = .saving(message: message)
+            }
         }
     }
 
     func triggerSavedSuccess(message: String = "Başarıyla Kaydedildi!") {
         DispatchQueue.main.async {
-            self.islandStatus = .saved(message: message)
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.74)) {
+                self.islandStatus = .saved(message: message)
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
                 if case .saved = self.islandStatus {
-                    self.islandStatus = .idle
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.74)) {
+                        self.islandStatus = .idle
+                    }
                 }
             }
         }
@@ -113,8 +128,86 @@ class KeyboardManager: ObservableObject {
 
     func triggerIdleStatus() {
         DispatchQueue.main.async {
-            self.islandStatus = .idle
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.74)) {
+                self.islandStatus = .idle
+            }
         }
+    }
+
+    // MARK: - 2.4G Kablosuz Bağlantı Yönetimi
+
+    /// 2.4G iletişimde hata durumunda Dynamic Island'da uyarı gösterir
+    func triggerWirelessWarning(title: String, message: String, retryAction: (() -> Void)? = nil) {
+        DispatchQueue.main.async {
+            self.isWirelessUnresponsive = true
+            self.lastWirelessOperationRetry = retryAction
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.74)) {
+                self.islandStatus = .wirelessWarning(title: title, message: message)
+            }
+            self.statusMessage = "Kablosuz Bağlantı Sorunu (2.4G)"
+        }
+    }
+
+    /// Kablosuz iletişim başarısız olduğunda çağrılır — kullanıcıya uyarı gösterir
+    func handleWirelessFailure(operation: String, retryAction: (() -> Void)? = nil) {
+        Self.log("⚠️ [2.4G] Kablosuz iletişim başarısız: \(operation)")
+        triggerWirelessWarning(
+            title: "KABLOSUZ BAĞLANTI SORUNU",
+            message: "Klavyeye ulaşılamıyor. Lütfen klavyeyi alıcıya yaklaştırın veya bir tuşa basarak uyandırın.",
+            retryAction: retryAction
+        )
+    }
+
+    /// Klavyeden başarılı yanıt geldiğinde watchdog'u sıfırlar ve uyarıyı kaldırır
+    func recordWirelessSuccess() {
+        guard connectionType == .wireless24G else { return }
+        wirelessWatchdogTimer?.cancel()
+        wirelessWatchdogTimer = nil
+        if isWirelessUnresponsive {
+            DispatchQueue.main.async {
+                self.isWirelessUnresponsive = false
+                self.lastWirelessOperationRetry = nil
+                if case .wirelessWarning = self.islandStatus {
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.74)) {
+                        self.islandStatus = .idle
+                    }
+                    self.statusMessage = "Empousa Aktif (2.4G)"
+                }
+            }
+        }
+    }
+
+    /// 2.4G komut gönderiminde watchdog zamanlayıcısı başlatır
+    func startWirelessWatchdog(timeout: TimeInterval = 3.5, operation: String, retryAction: (() -> Void)? = nil) {
+        wirelessWatchdogTimer?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            self.handleWirelessFailure(operation: operation, retryAction: retryAction)
+        }
+        wirelessWatchdogTimer = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout, execute: workItem)
+    }
+
+    /// Kablosuz uyarısını kullanıcı etkileşimiyle kapatır
+    func dismissWirelessWarning() {
+        wirelessWatchdogTimer?.cancel()
+        wirelessWatchdogTimer = nil
+        DispatchQueue.main.async {
+            self.isWirelessUnresponsive = false
+            self.lastWirelessOperationRetry = nil
+            if case .wirelessWarning = self.islandStatus {
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.74)) {
+                    self.islandStatus = .idle
+                }
+            }
+        }
+    }
+
+    /// Son başarısız kablosuz işlemi tekrar dener
+    func retryLastWirelessOperation() {
+        let retry = lastWirelessOperationRetry
+        dismissWirelessWarning()
+        retry?()
     }
 
     // Müzik Ritmi Modu
@@ -530,6 +623,11 @@ class KeyboardManager: ObservableObject {
         let hexStr = buffer.map { String(format: "%02X", $0) }.joined(separator: " ")
         Self.log("📥 [Donanım Telemetrisi] ReportID: 0x\(String(format: "%02X", reportID)), Len: \(length), Baytlar: [\(hexStr)]")
 
+        // 2.4G Watchdog: Klavyeden herhangi bir input report gelmesi cihazın aktif olduğunu gösterir
+        if connectionType == .wireless24G {
+            recordWirelessSuccess()
+        }
+
         DispatchQueue.main.async {
             self.lastHardwareConfig = "ID: 0x\(String(format: "%02X", reportID)) | [\(hexStr)]"
         }
@@ -906,6 +1004,25 @@ class KeyboardManager: ObservableObject {
             }
         }
 
+        // 2.4G Kablosuz: Başarısız ise 3 deneme daha (25ms backoff — IC2481 RF buffer)
+        if result != kIOReturnSuccess && connectionType == .wireless24G {
+            for attempt in 1...3 {
+                usleep(25000)
+                Self.log("🔄 [2.4G Retry] Output Report tekrar deneniyor... (Deneme \(attempt)/3)")
+                result = reportBytes.withUnsafeMutableBytes { pointer in
+                    guard let baseAddress = pointer.baseAddress else { return kIOReturnBadArgument }
+                    return IOHIDDeviceSetReport(
+                        device,
+                        kIOHIDReportTypeOutput,
+                        CFIndex(reportID),
+                        baseAddress,
+                        reportCount
+                    )
+                }
+                if result == kIOReturnSuccess { break }
+            }
+        }
+
         if result == kIOReturnSuccess {
             Self.log("✅ Output [0x\(String(format: "%02X", reportID))] başarıyla gönderildi: \(reportBytes.map { String(format: "%02X", $0) }.joined(separator: " "))")
         } else {
@@ -998,26 +1115,45 @@ class KeyboardManager: ObservableObject {
             }
         } else {
             // Kablosuz (2.4G) modda: Output Report 0x13 ile 10 adet dilim paket (her biri 14B)
+            // IC2481 RF çip arabelleği için 22ms minimum aralık gerekli (12ms yetersiz kalıyordu — KB.ini IC2481=1)
             let packets = KeyboardCommand.createSlicedPackets(cmd: KeyboardCommand.cmdSetLED, payload: profile)
-            Self.log("📤 [SendProfile-Wireless] \(packets.count) dilim paket gönderiliyor...")
-            for pkt in packets {
+            Self.log("📤 [SendProfile-Wireless] \(packets.count) dilim paket gönderiliyor (IC2481 22ms aralık)...")
+            var allSuccess = true
+            for (index, pkt) in packets.enumerated() {
                 var reportBytes = Array(pkt.dropFirst())
                 reportBytes.insert(0x13, at: 0)
-                var res = reportBytes.withUnsafeMutableBytes { ptr in
-                    IOHIDDeviceSetReport(device, kIOHIDReportTypeOutput, CFIndex(0x13), ptr.baseAddress!, ptr.count)
-                }
-                if res == -536870195 /* kIOReturnNotOpen */ {
-                    if ensureDeviceOpen(device) {
-                        res = reportBytes.withUnsafeMutableBytes { ptr in
-                            IOHIDDeviceSetReport(device, kIOHIDReportTypeOutput, CFIndex(0x13), ptr.baseAddress!, ptr.count)
+                var sliceSent = false
+
+                for attempt in 0..<3 {
+                    var res = reportBytes.withUnsafeMutableBytes { ptr in
+                        IOHIDDeviceSetReport(device, kIOHIDReportTypeOutput, CFIndex(0x13), ptr.baseAddress!, ptr.count)
+                    }
+                    if res == -536870195 /* kIOReturnNotOpen */ {
+                        if ensureDeviceOpen(device) {
+                            res = reportBytes.withUnsafeMutableBytes { ptr in
+                                IOHIDDeviceSetReport(device, kIOHIDReportTypeOutput, CFIndex(0x13), ptr.baseAddress!, ptr.count)
+                            }
                         }
                     }
+                    if res == kIOReturnSuccess {
+                        sliceSent = true
+                        break
+                    }
+                    Self.log("⚠️ [SendProfile-Wireless] Dilim \(index+1)/\(packets.count) deneme \(attempt+1)/3 başarısız: \(KeyboardManager.describeIOReturn(res))")
+                    usleep(25000) // 25ms backoff before retry
                 }
-                if res != kIOReturnSuccess {
-                    Self.log("❌ [SendProfile-Wireless] Dilim paket gönderilemedi: \(KeyboardManager.describeIOReturn(res))")
+
+                if !sliceSent {
+                    Self.log("❌ [SendProfile-Wireless] Dilim \(index+1)/\(packets.count) 3 denemede gönderilemedi, işlem iptal")
+                    allSuccess = false
+                    self.handleWirelessFailure(operation: "Aydınlatma Ayarları Gönderimi")
                     break
                 }
-                usleep(12000)
+                usleep(22000) // IC2481 RF buffer: 22ms inter-packet delay
+            }
+            if allSuccess {
+                Self.log("✅ [SendProfile-Wireless] Tüm \(packets.count) dilim başarıyla gönderildi")
+                self.recordWirelessSuccess()
             }
         }
     }
