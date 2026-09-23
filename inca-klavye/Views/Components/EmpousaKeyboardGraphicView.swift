@@ -28,6 +28,9 @@ struct EmpousaKeyboardGraphicView: View {
     // Opsiyonel: Tuşlara özel atanmış renkler (KeyId -> Renk)
     var perKeyColors: [String: Color] = [:]
     
+    // Opsiyonel: Alt bilgilendirme çubuğunu göster/gizle
+    var showFooterBar: Bool = true
+
     // Olay geri çağrıları
     var onKeySelected: ((KeyboardKeyDef) -> Void)? = nil
     var onKnobRotatedOrClicked: (() -> Void)? = nil
@@ -269,7 +272,7 @@ struct EmpousaKeyboardGraphicView: View {
             .frame(width: 710, height: 310)
 
             // Alt Bilgilendirme Çubuğu
-            if let selected = selectedKeyId {
+            if showFooterBar, let selected = selectedKeyId {
                 HStack(spacing: 8) {
                     Circle()
                         .fill(Color(red: 0.98, green: 0.18, blue: 0.38))
@@ -479,6 +482,6 @@ struct EmpousaKeyboardGraphicView: View {
             }
         }
         .buttonStyle(.plain)
-        .help("Döner Tekerlek: Tıklayarak Ses ve RGB Parlaklık modları arasında geçiş yapabilirsiniz")
+        .help("Döner Tekerlek: Tıklayarak Ses Kontrolcüsü ve Aydınlatma Kontrolcüsü arasında geçiş yapabilirsiniz")
     }
 }

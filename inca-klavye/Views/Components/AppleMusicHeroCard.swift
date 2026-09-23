@@ -79,7 +79,7 @@ struct AppleMusicHeroCard: View {
                 // Orta Bilgi Alanı
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 8) {
-                        Text("EMPOUSA SERİSİ")
+                        Text(loc.tr("hero_series", default: "EMPOUSA SERİSİ"))
                             .font(.system(size: 11, weight: .bold))
                             .foregroundColor(currentColor)
                             .tracking(1.5)
@@ -87,7 +87,7 @@ struct AppleMusicHeroCard: View {
                         Text("•")
                             .foregroundColor(.secondary)
                         
-                        Text("HALL EFFECT MANYETİK EKSEN")
+                        Text(loc.tr("hero_hall_effect", default: "HALL EFFECT MANYETİK EKSEN"))
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(.secondary)
                     }
@@ -96,7 +96,7 @@ struct AppleMusicHeroCard: View {
                         .font(.system(size: 26, weight: .bold, design: .default))
                         .foregroundColor(.white)
 
-                    Text("Aktif Efekt: \(activeEffectName)")
+                    Text(loc.tr("hero_active_effect", default: "Aktif Efekt:") + " \(activeEffectName)")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.white.opacity(0.8))
 
@@ -186,7 +186,7 @@ struct AppleMusicHeroCard: View {
                             Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
                                 .font(.system(size: 11))
                                 .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
-                            Text(keyboardManager.wheelMode == .volume ? "Tekerlek: Ses" : "Tekerlek: Aydınlatma")
+                            Text(keyboardManager.wheelMode.badgeTitle(loc: loc))
                                 .font(.system(size: 12, weight: .semibold))
                         }
                         .padding(.horizontal, 9)

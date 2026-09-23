@@ -112,7 +112,7 @@ struct XcodeSplashScreenView: View {
                             .font(.system(size: 30, weight: .bold, design: .default))
                             .foregroundColor(.white)
 
-                        Text("Sürüm 1.0 • macOS Hall Effect Suite")
+                        Text("Sürüm 1.0 • macOS Sürücüsü")
                             .font(.system(size: 13, weight: .regular))
                             .foregroundColor(.white.opacity(0.65))
 
@@ -180,11 +180,11 @@ struct XcodeSplashScreenView: View {
                 // Alt Bilgi / Hızlı Geçiş Alanı
                 HStack {
                     HStack(spacing: 6) {
-                        Image(systemName: "cpu")
+                        Image(systemName: "bolt.fill")
                             .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                        Text("Hall Effect Manyetik Eksen & 8000Hz Yoklama")
-                            .font(.system(size: 11))
+                            .foregroundColor(.yellow)
+                        Text("2.4GHz Lightspeed & 1000Hz Yoklama")
+                            .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.secondary)
                     }
 

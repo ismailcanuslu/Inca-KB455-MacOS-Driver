@@ -54,200 +54,48 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             NavigationSplitView(columnVisibility: $columnVisibility) {
             // Sol Yan Menü (Apple Music Sidebar)
             VStack(alignment: .leading, spacing: 0) {
-                // Aygıt Başlığı & Hızlı Durum
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 8) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                .fill(
-                                    LinearGradient(
-                                        colors: keyboardManager.isConnected 
-                                            ? [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple]
-                                            : [Color.gray.opacity(0.4), Color.gray.opacity(0.2)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
+                // Aygıt Başlığı (Yalnızca Klavye Marka & Model Bilgisi)
+                HStack(spacing: 10) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: keyboardManager.isConnected 
+                                        ? [Color(red: 0.98, green: 0.18, blue: 0.38), Color(red: 0.85, green: 0.1, blue: 0.28)] 
+                                        : [Color.gray.opacity(0.4), Color.gray.opacity(0.2)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 )
-                                .frame(width: 24, height: 24)
-                            
-                            Image(systemName: "keyboard.fill")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(.white)
-                        }
-
-                        VStack(alignment: .leading, spacing: 1) {
-                            HStack(spacing: 6) {
-                                Text("Empousa IKG-455")
-                                    .font(.system(size: 13, weight: .bold))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.85)
-                                
-                                Circle()
-                                    .fill(keyboardManager.isConnected ? Color.green : Color.orange)
-                                    .frame(width: 6, height: 6)
-                            }
-
-                            Text("Magnetic Gaming\nKeyboard")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(.secondary)
-                                .lineLimit(2)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-
-                        Spacer()
-
-                        // Hızlı Dil Değiştirici Menüsü (Minimalist Apple Tarzı)
-                        Menu {
-                            ForEach(AppLanguage.allCases) { lang in
-                                Button(action: {
-                                    loc.setLanguage(lang)
-                                }) {
-                                    HStack {
-                                        Text(lang.displayName)
-                                        if loc.currentLanguage == lang {
-                                            Image(systemName: "checkmark")
-                                        }
-                                    }
-                                }
-                            }
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "globe")
-                                    .font(.system(size: 10))
-                                Text(loc.currentLanguage.code)
-                                    .font(.system(size: 11, weight: .bold))
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 7))
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.white.opacity(0.08))
-                            .cornerRadius(6)
-                        }
-                        .menuStyle(.borderlessButton)
+                            )
+                            .frame(width: 28, height: 28)
+                        
+                        Image(systemName: "keyboard.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.white)
                     }
 
-                    // Yalnızca Cihaz Bağlıyken Gösterilen Rozetler
-                    if keyboardManager.isConnected {
-                        VStack(alignment: .leading, spacing: 5) {
-                            // Satır 1: Pil + Bağlantı (sabit üstte kalır)
-                            HStack(spacing: 6) {
-                                // Pil
-                                if keyboardManager.batteryLevel >= 100 && keyboardManager.isCharging {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.green)
-                                            .font(.system(size: 10))
-                                        Text("%100")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundColor(.green)
-                                    }
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 4)
-                                    .background(Color.green.opacity(0.15))
-                                    .cornerRadius(6)
-                                    .help(loc.tr("tc_fully_charged", default: "Tamamen Şarj Oldu"))
-                                } else if keyboardManager.batteryLevel <= 20 && !keyboardManager.isCharging {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "exclamationmark.triangle.fill")
-                                            .foregroundColor(.red)
-                                            .font(.system(size: 10))
-                                        Text("%\(keyboardManager.batteryLevel)")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundColor(.red)
-                                    }
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 4)
-                                    .background(Color.red.opacity(0.18))
-                                    .cornerRadius(6)
-                                    .help(loc.tr("tc_low_battery", default: "Batarya Zayıf"))
-                                } else {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: batteryIcon)
-                                            .foregroundColor(batteryColor)
-                                            .font(.system(size: 10))
-                                        Text("%\(keyboardManager.batteryLevel)")
-                                            .font(.system(size: 10, weight: .semibold))
-                                        if keyboardManager.isCharging {
-                                            Image(systemName: "bolt.fill")
-                                                .font(.system(size: 8))
-                                                .foregroundColor(.yellow)
-                                        }
-                                    }
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 4)
-                                    .background(Color.white.opacity(0.08))
-                                    .cornerRadius(6)
-                                }
-
-                                // Bağlantı Modu (USB / 2.4G / BT)
-                                HStack(spacing: 4) {
-                                    Image(systemName: keyboardManager.connectionType.icon)
-                                        .font(.system(size: 10))
-                                        .foregroundColor(.cyan)
-                                    Text(connectionShortLabel)
-                                        .font(.system(size: 10, weight: .semibold))
-                                }
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 4)
-                                .background(Color.white.opacity(0.08))
-                                .cornerRadius(6)
-
-                                Spacer()
-                            }
-
-                            // Satır 2: Mac Modu + Tekerlek Modu (aşağı inebilir)
-                            HStack(spacing: 6) {
-                                // İşletim Sistemi Modu (Mac / Win)
-                                HStack(spacing: 4) {
-                                    Image(systemName: keyboardManager.isMacMode ? "apple.logo" : "window.vertical.closed")
-                                        .font(.system(size: 10))
-                                    Text(keyboardManager.isMacMode ? "Mac" : "Win")
-                                        .font(.system(size: 10, weight: .semibold))
-                                }
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 4)
-                                .background(Color.white.opacity(0.08))
-                                .cornerRadius(6)
-
-                                // Döner Tekerlek (Knob) Modu Rozeti
-                                HStack(spacing: 4) {
-                                    Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
-                                        .font(.system(size: 10))
-                                        .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
-                                    Text(keyboardManager.wheelMode == .volume ? "Ses" : "Işık")
-                                        .font(.system(size: 10, weight: .semibold))
-                                }
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 4)
-                                .background(Color.white.opacity(0.08))
-                                .cornerRadius(6)
-                                .help("Tekerlek Modu: \(keyboardManager.wheelMode.name)")
-
-                                Spacer()
-                            }
-                        }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    } else {
-                        // Bağlantı Bekleniyor Durum Rozeti
+                    VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
+                            Text("Empousa IKG-455")
+                                .font(.system(size: 13.5, weight: .bold))
+                                .lineLimit(1)
+                            
                             Circle()
-                                .fill(Color.orange)
+                                .fill(keyboardManager.isConnected ? Color.green : Color.orange)
                                 .frame(width: 6, height: 6)
-                            Text("Bağlantı Bekleniyor")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(.secondary)
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.orange.opacity(0.1))
-                        .cornerRadius(6)
+
+                        Text("Magnetic Gaming Keyboard")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
                     }
+
+                    Spacer()
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
@@ -394,13 +242,13 @@ struct ContentView: View {
                 }
                 .help(loc.tr("tc_about", default: "Hakkında"))
 
-                // Döner Tekerlek (Knob) Modu Rozeti (Info butonunun hemen sağında)
+                // Döner Tekerlek (Knob) Modu Rozeti (Info butonunun hemen sağında, sidenav'a yakın)
                 if keyboardManager.isConnected {
                     HStack(spacing: 5) {
                         Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
                             .font(.system(size: 11))
                             .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
-                        Text(keyboardManager.wheelMode == .volume ? "Tekerlek: Ses" : "Tekerlek: Işık")
+                        Text(keyboardManager.wheelMode.badgeTitle(loc: loc))
                             .font(.system(size: 11, weight: .semibold))
                     }
                     .padding(.horizontal, 8)
@@ -408,13 +256,14 @@ struct ContentView: View {
                     .background(Color.white.opacity(0.08))
                     .cornerRadius(7)
                     .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.white.opacity(0.12), lineWidth: 1))
-                    .help("Tekerlek Modu: \(keyboardManager.wheelMode.name)")
+                    .help(loc.tr("settings_knob_title", default: "Döner Tekerlek") + ": \(keyboardManager.wheelMode.localizedName(loc: loc))")
                 }
             }
 
             ToolbarItem(placement: .principal) {
-                dynamicIslandPrincipalBar
-                    .animation(.spring(response: 0.42, dampingFraction: 0.68, blendDuration: 0.2), value: keyboardManager.islandStatus)
+                // Dinamik ada üstte bağımsız yüzdüğü için merkez boşluğu koruma alanı
+                Color.clear
+                    .frame(width: 220, height: 28)
             }
 
             ToolbarItemGroup(placement: .automatic) {
@@ -483,29 +332,17 @@ struct ContentView: View {
                         .background(Color.primary.opacity(0.06))
                         .cornerRadius(8)
                     }
-
-                    // Canlı Tekerlek Modu Rozeti (Knob Mode: Ses / Aydınlatma)
-                    HStack(spacing: 5) {
-                        Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
-                            .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
-                            .font(.system(size: 11))
-                        Text(keyboardManager.wheelMode == .volume ? "Tekerlek: Ses Kontrolü" : "Tekerlek: Aydınlatma Kontrolü")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(keyboardManager.wheelMode == .volume ? Color.blue.opacity(0.12) : Color.yellow.opacity(0.14))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(keyboardManager.wheelMode == .volume ? Color.blue.opacity(0.3) : Color.yellow.opacity(0.35), lineWidth: 1)
-                    )
-                    .cornerRadius(8)
-                    .help("Döner Tekerlek Modu: Klavyedeki döner tekerleğe basarak Ses veya Aydınlatma modu arasında geçiş yapabilirsiniz")
                 }
             }
         }
         .tint(Color(red: 0.98, green: 0.18, blue: 0.38)) // Apple Music Pink
         .animation(.easeInOut(duration: 0.25), value: keyboardManager.isConnected)
+
+        // Yüzen Dinamik Ada (iPhone tarzı barın sınırlarından bağımsız, aşağıya doğru esneyen tasarım)
+        DynamicIslandFloatingView(keyboardManager: keyboardManager, loc: loc)
+            .padding(.top, 6)
+            .ignoresSafeArea(.all, edges: .top)
+            .zIndex(500)
 
         // Xcode Tarzı Başlangıç Açılış Ekranı (Splash Screen)
         if isShowingSplashScreen {
@@ -553,233 +390,6 @@ struct ContentView: View {
         if level <= 20 { return .red }
         if level <= 50 { return .orange }
         return .green
-    }
-
-    // MARK: - Dinamik Ada Üst Bar (Toolbar Principal Dynamic Island)
-    @ViewBuilder
-    private var dynamicIslandPrincipalBar: some View {
-        switch keyboardManager.islandStatus {
-        case .idle:
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(keyboardManager.isConnected ? Color.green : Color.orange)
-                    .frame(width: 8, height: 8)
-
-                Text(keyboardManager.isConnected ? "Inca Empousa" : loc.tr("tc_searching_connection", default: "Bağlantı Aranıyor..."))
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .layoutPriority(1)
-
-                if keyboardManager.isConnected {
-                    HStack(spacing: 4) {
-                        Image(systemName: keyboardManager.connectionType.icon)
-                            .font(.system(size: 10, weight: .medium))
-                        Text(connectionShortLabel)
-                            .font(.system(size: 10, weight: .bold))
-                    }
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Color.primary.opacity(0.08))
-                    .clipShape(Capsule())
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 5)
-            .frame(height: 30)
-            .background(Color.primary.opacity(0.04))
-            .cornerRadius(15)
-            .overlay(
-                RoundedRectangle(cornerRadius: 15)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
-            .transition(.scale(scale: 0.9).combined(with: .opacity))
-
-        case .unsavedChanges(let description):
-            VStack(spacing: 6) {
-                // Üst Satır: Durum & Bilgi
-                HStack(spacing: 8) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.orange.opacity(0.25))
-                            .frame(width: 18, height: 18)
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
-                            .font(.system(size: 10, weight: .bold))
-                    }
-
-                    Text("KAYDEDİLMEMİŞ DEĞİŞİKLİKLER")
-                        .font(.system(size: 11, weight: .black))
-                        .foregroundColor(.primary)
-                        .tracking(0.5)
-
-                    if !description.isEmpty {
-                        Text(description)
-                            .font(.system(size: 10, weight: .semibold, design: .rounded))
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 2)
-                            .background(Color.orange.opacity(0.2))
-                            .foregroundColor(.orange)
-                            .cornerRadius(5)
-                    }
-
-                    Spacer()
-                }
-
-                // Alt Satır: Alt Bilgi & Aksiyon Butonları
-                HStack(spacing: 12) {
-                    Text("Klavyeye aktarılmayı bekliyor")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.secondary)
-
-                    Spacer()
-
-                    // Vazgeç Butonu
-                    Button(action: {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                            keyboardManager.onDiscardChangesRequested?()
-                            keyboardManager.triggerIdleStatus()
-                        }
-                    }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 9, weight: .bold))
-                            Text("Vazgeç")
-                                .font(.system(size: 11, weight: .semibold))
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.12))
-                        .foregroundColor(.primary)
-                        .cornerRadius(8)
-                    }
-                    .buttonStyle(.plain)
-                    .help("Değişiklikleri iptal et ve önceki ayarlara dön")
-
-                    // Klavyeye Kaydet Butonu
-                    Button(action: {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                            keyboardManager.onCommitChangesRequested?()
-                        }
-                    }) {
-                        HStack(spacing: 5) {
-                            Image(systemName: "arrow.down.circle.fill")
-                                .font(.system(size: 11, weight: .bold))
-                            Text("Klavyeye Kaydet")
-                                .font(.system(size: 11, weight: .bold))
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(
-                            LinearGradient(
-                                colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color(red: 0.85, green: 0.1, blue: 0.3)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .shadow(color: Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.5), radius: 5, x: 0, y: 2)
-                    }
-                    .buttonStyle(.plain)
-                    .help("Değişiklikleri klavye donanım belleğine yaz")
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .frame(minWidth: 440)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.orange.opacity(0.1))
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.orange.opacity(0.9), Color.orange.opacity(0.3)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.5
-                    )
-            )
-            .shadow(color: Color.orange.opacity(0.35), radius: 14, y: 6)
-            .transition(.scale(scale: 0.9).combined(with: .opacity))
-
-        case .saving(let message):
-            HStack(spacing: 12) {
-                ProgressView()
-                    .scaleEffect(0.7)
-                    .frame(width: 20, height: 20)
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(message.isEmpty ? "Klavyeye Yazılıyor..." : message)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.cyan)
-                    Text("Donanım EEPROM belleği güncelleniyor...")
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 8)
-            .frame(minWidth: 340)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.cyan.opacity(0.1))
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color.cyan.opacity(0.7), lineWidth: 1.5)
-            )
-            .shadow(color: Color.cyan.opacity(0.3), radius: 10, y: 4)
-            .transition(.scale(scale: 0.9).combined(with: .opacity))
-
-        case .saved(let message):
-            HStack(spacing: 10) {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.system(size: 16, weight: .bold))
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(message.isEmpty ? "Ayarlar Kaydedildi!" : message)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.green)
-                    Text("Değişiklikler klavye donanımına başarıyla yazıldı ✓")
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 8)
-            .frame(minWidth: 340)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.green.opacity(0.1))
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color.green.opacity(0.7), lineWidth: 1.5)
-            )
-            .shadow(color: Color.green.opacity(0.3), radius: 10, y: 4)
-            .transition(.scale(scale: 0.9).combined(with: .opacity))
-        }
     }
 }
 

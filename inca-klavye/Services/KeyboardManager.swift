@@ -132,14 +132,28 @@ class KeyboardManager: ObservableObject {
         var id: UInt8 { self.rawValue }
         var name: String {
             switch self {
-            case .volume: return "Ses & Medya"
-            case .backlight: return "RGB Parlaklık"
+            case .volume: return "Ses Kontrolcüsü"
+            case .backlight: return "Aydınlatma Kontrolcüsü"
             }
         }
         var icon: String {
             switch self {
             case .volume: return "speaker.wave.3.fill"
             case .backlight: return "sun.max.fill"
+            }
+        }
+
+        func badgeTitle(loc: LocalizationManager = .shared) -> String {
+            switch self {
+            case .volume: return loc.tr("knob_mode_volume", default: "Tekerlek: Ses Kontrolcüsü")
+            case .backlight: return loc.tr("knob_mode_lighting", default: "Tekerlek: Aydınlatma Kontrolcüsü")
+            }
+        }
+
+        func localizedName(loc: LocalizationManager = .shared) -> String {
+            switch self {
+            case .volume: return loc.tr("knob_name_volume", default: "Ses Kontrolcüsü")
+            case .backlight: return loc.tr("knob_name_lighting", default: "Aydınlatma Kontrolcüsü")
             }
         }
     }
@@ -1431,7 +1445,7 @@ class KeyboardManager: ObservableObject {
         Self.log("⏱️ Uyku süresi ayarlanıyor: \(seconds) saniye")
         
         let safeSeconds = max(0, min(1200, seconds))
-        let sleepUnits = UInt8(safeSeconds / 30) // 0=Asla, 1=30sn, 2=1dk, 6=3dk, 40=20dk
+        let sleepUnits: UInt8 = safeSeconds == 0 ? 0 : UInt8(max(1, (safeSeconds + 14) / 30)) // 0=Asla, 1=20-30sn, 2=1dk, 6=3dk, 40=20dk
         
         // 1. Kalıcı 128 baytlık profil tamponunun 24. baytına yaz
         if cachedLedProfile[56] == 0 && cachedLedProfile[57] == 0 {

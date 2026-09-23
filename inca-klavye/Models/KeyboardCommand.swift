@@ -26,27 +26,31 @@ enum LightingEffect: UInt8, CaseIterable, Identifiable {
     var id: UInt8 { self.rawValue }
     
     var name: String {
+        localizedName()
+    }
+
+    func localizedName(loc: LocalizationManager = .shared) -> String {
         switch self {
-        case .solid: return "Sabit Açık"
-        case .breathing: return "Nefes Alma"
-        case .rainbow: return "Gökkuşağı"
-        case .zoomGlow: return "Uzaklaşan Parlama"
-        case .raindrops: return "Yağmur Damlaları"
-        case .rainbowWheel: return "Gökkuşağı Tekerleği"
-        case .waveRipple: return "Dalgalı Parıltı"
-        case .stars: return "Yıldızlar Parlar"
-        case .shadowFade: return "Gölge Kaybolur"
-        case .retroSnake: return "Retro Yılan"
-        case .neonStream: return "Neon Akışı"
-        case .reactive: return "Reaksiyon Efekti"
-        case .sineWave: return "Sinüs Dalga"
-        case .scan: return "Takip Eden Tarama"
-        case .rotatingVenus: return "Dönen Venüs"
-        case .waterfall: return "Renkli Şelale"
-        case .blossom: return "Çiçek Açma"
-        case .storm: return "Dönen Fırtına"
-        case .custom: return "Özel Renk"
-        case .off: return "Işıkları Kapat"
+        case .solid: return loc.tr("tc_kb_led1", default: "Sabit Açık")
+        case .breathing: return loc.tr("tc_kb_led2", default: "Nefes Alma")
+        case .rainbow: return loc.tr("tc_kb_led3", default: "Gökkuşağı")
+        case .zoomGlow: return loc.tr("tc_kb_led4", default: "Uzaklaşan Parlama")
+        case .raindrops: return loc.tr("tc_kb_led5", default: "Yağmur Damlaları")
+        case .rainbowWheel: return loc.tr("tc_kb_led6", default: "Gökkuşağı Tekerleği")
+        case .waveRipple: return loc.tr("tc_kb_led7", default: "Dalgalı Parıltı")
+        case .stars: return loc.tr("tc_kb_led8", default: "Yıldızlar Parlar")
+        case .shadowFade: return loc.tr("tc_kb_led9", default: "Gölge Kaybolur")
+        case .retroSnake: return loc.tr("tc_kb_led10", default: "Retro Yılan")
+        case .neonStream: return loc.tr("tc_kb_led11", default: "Neon Akışı")
+        case .blossom: return loc.tr("tc_kb_led17", default: "Çiçek Açma")
+        case .sineWave: return loc.tr("tc_kb_led13", default: "Sinüs Dalga")
+        case .reactive: return loc.tr("tc_kb_led12", default: "Reaksiyon Efekti")
+        case .rotatingVenus: return loc.tr("tc_kb_led15", default: "Dönen Venüs")
+        case .waterfall: return loc.tr("tc_kb_led16", default: "Renkli Şelale")
+        case .scan: return loc.tr("tc_kb_led14", default: "Takip Eden Tarama")
+        case .storm: return loc.tr("tc_kb_led18", default: "Dönen Fırtına")
+        case .custom: return loc.tr("tc_kb_led19", default: "Özel Renk")
+        case .off: return loc.tr("tc_kb_led20", default: "Işıkları Kapat")
         }
     }
 
@@ -89,27 +93,31 @@ enum LightingEffect: UInt8, CaseIterable, Identifiable {
     }
 
     var subtitle: String {
+        localizedSubtitle()
+    }
+
+    func localizedSubtitle(loc: LocalizationManager = .shared) -> String {
         switch self {
-        case .solid: return "Sürekli Canlı Işık"
-        case .breathing: return "Yumuşak Nefes Geçişi"
-        case .rainbow: return "Kesintisiz Spektrum"
-        case .zoomGlow: return "Merkezden Dışa Parıltı"
-        case .raindrops: return "Işık Damlaları"
-        case .rainbowWheel: return "Spektrum Dönüşü"
-        case .waveRipple: return "Tuş Vuruş Dalgası"
-        case .stars: return "Yanıp Sönen Yıldızlar"
-        case .shadowFade: return "Hızlı Sönen İzler"
-        case .retroSnake: return "Piksel Yılan Dansı"
-        case .neonStream: return "Akıcı Neon Şeritleri"
-        case .blossom: return "Dışa Açılan Çiçek"
-        case .sineWave: return "Yumuşak Dalga Salınımı"
-        case .reactive: return "Basılan Tuşa Duyarlı"
-        case .rotatingVenus: return "Yörüngesel Dönüş"
-        case .waterfall: return "Yukarıdan Aşağı Akış"
-        case .scan: return "Sağa Sola Lazer Tarama"
-        case .storm: return "Girdap Fırtına Hareketi"
-        case .custom: return "Özel Tuş Matrisi"
-        case .off: return "Aydınlatma Kapalı"
+        case .solid: return loc.tr("effect_sub_solid", default: "Sürekli Canlı Işık")
+        case .breathing: return loc.tr("effect_sub_breathing", default: "Yumuşak Nefes Geçişi")
+        case .rainbow: return loc.tr("effect_sub_rainbow", default: "Kesintisiz Spektrum")
+        case .zoomGlow: return loc.tr("effect_sub_zoom", default: "Merkezden Dışa Parıltı")
+        case .raindrops: return loc.tr("effect_sub_raindrops", default: "Işık Damlaları")
+        case .rainbowWheel: return loc.tr("effect_sub_wheel", default: "Spektrum Dönüşü")
+        case .waveRipple: return loc.tr("effect_sub_ripple", default: "Tuş Vuruş Dalgası")
+        case .stars: return loc.tr("effect_sub_stars", default: "Yanıp Sönen Yıldızlar")
+        case .shadowFade: return loc.tr("effect_sub_shadow", default: "Hızlı Sönen İzler")
+        case .retroSnake: return loc.tr("effect_sub_snake", default: "Piksel Yılan Dansı")
+        case .neonStream: return loc.tr("effect_sub_neon", default: "Akıcı Neon Şeritleri")
+        case .blossom: return loc.tr("effect_sub_blossom", default: "Dışa Açılan Çiçek")
+        case .sineWave: return loc.tr("effect_sub_sine", default: "Yumuşak Dalga Salınımı")
+        case .reactive: return loc.tr("effect_sub_reactive", default: "Basılan Tuşa Duyarlı")
+        case .rotatingVenus: return loc.tr("effect_sub_venus", default: "Yörüngesel Dönüş")
+        case .waterfall: return loc.tr("effect_sub_waterfall", default: "Yukarıdan Aşağı Akış")
+        case .scan: return loc.tr("effect_sub_scan", default: "Sağa Sola Lazer Tarama")
+        case .storm: return loc.tr("effect_sub_storm", default: "Girdap Fırtına Hareketi")
+        case .custom: return loc.tr("effect_sub_custom", default: "Özel Tuş Matrisi")
+        case .off: return loc.tr("effect_sub_off", default: "Aydınlatma Kapalı")
         }
     }
 }
@@ -130,17 +138,21 @@ enum SideLEDEffect: UInt8, CaseIterable, Identifiable {
     var id: UInt8 { self.rawValue }
     
     var name: String {
+        localizedName()
+    }
+
+    func localizedName(loc: LocalizationManager = .shared) -> String {
         switch self {
-        case .streaming: return "Renkli Akış"
-        case .steady: return "Sabit Işık"
-        case .breathing: return "Nefes Alma"
-        case .tail: return "Kuyruklu Akış"
-        case .neon: return "Neon Işıltı"
-        case .colorfulSteady: return "Sabit Çok Renkli"
-        case .flicker: return "Çakarlı / Titreşim"
-        case .stars: return "Yıldız Işıltısı"
-        case .wave: return "Işık Dalgası"
-        case .off: return "Yan Işıkları Kapat"
+        case .streaming: return loc.tr("tc_ms_led1", default: "Renkli Akış")
+        case .steady: return loc.tr("tc_ms_led2", default: "Sabit Işık")
+        case .breathing: return loc.tr("tc_ms_led3", default: "Nefes Alma")
+        case .tail: return loc.tr("tc_ms_led4", default: "Kuyruklu Akış")
+        case .neon: return loc.tr("tc_ms_led5", default: "Neon Işıltı")
+        case .colorfulSteady: return loc.tr("tc_ms_led6", default: "Sabit Çok Renkli")
+        case .flicker: return loc.tr("tc_ms_led7", default: "Çakarlı / Titreşim")
+        case .stars: return loc.tr("tc_ms_led8", default: "Yıldız Işıltısı")
+        case .wave: return loc.tr("tc_ms_led9", default: "Işık Dalgası")
+        case .off: return loc.tr("tc_ms_led10", default: "Yan Işıkları Kapat")
         }
     }
     
@@ -160,17 +172,21 @@ enum SideLEDEffect: UInt8, CaseIterable, Identifiable {
     }
 
     var subtitle: String {
+        localizedSubtitle()
+    }
+
+    func localizedSubtitle(loc: LocalizationManager = .shared) -> String {
         switch self {
-        case .streaming: return "Dinamik Çevre Akışı"
-        case .steady: return "Sürekli Sabit Işık"
-        case .breathing: return "Yumuşak Nefes Alma"
-        case .tail: return "Kuyruklu Işık İzi"
-        case .neon: return "Neon Işıltı Efekti"
-        case .colorfulSteady: return "Çok Renkli Masaya Yansıma"
-        case .flicker: return "Canlı Titreşim"
-        case .stars: return "Yıldız Işıltısı"
-        case .wave: return "Akan Işık Dalgası"
-        case .off: return "Yan Şerit Kapalı"
+        case .streaming: return loc.tr("side_sub_streaming", default: "Dinamik Çevre Akışı")
+        case .steady: return loc.tr("side_sub_steady", default: "Sürekli Sabit Işık")
+        case .breathing: return loc.tr("side_sub_breathing", default: "Yumuşak Nefes Alma")
+        case .tail: return loc.tr("side_sub_tail", default: "Kuyruklu Işık İzi")
+        case .neon: return loc.tr("side_sub_neon", default: "Neon Işıltı Efekti")
+        case .colorfulSteady: return loc.tr("side_sub_colorful_steady", default: "Çok Renkli Masaya Yansıma")
+        case .flicker: return loc.tr("side_sub_flicker", default: "Canlı Titreşim")
+        case .stars: return loc.tr("side_sub_stars", default: "Yıldız Işıltısı")
+        case .wave: return loc.tr("side_sub_wave", default: "Akan Işık Dalgası")
+        case .off: return loc.tr("side_sub_off", default: "Yan Şerit Kapalı")
         }
     }
 }

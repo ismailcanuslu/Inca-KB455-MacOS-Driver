@@ -17,6 +17,15 @@ struct DeviceSettingsView: View {
     @State private var hasUnsavedHardwareSettings: Bool = false
     @State private var hardwareSettingsSavedFeedback: String? = nil
 
+    // Profil ve Fabrika Ayarları Onay Diyalogları
+    @State private var pendingProfileIndex: Int? = nil
+    @State private var pendingProfileName: String = ""
+    @State private var showProfileSwitchAlert: Bool = false
+    @State private var showResetConfirmAlert: Bool = false
+
+    // iPhone Tarzı Yatay Uyku Sayacı Çarkı
+    @State private var isSleepPickerExpanded: Bool = false
+
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
@@ -169,39 +178,45 @@ struct DeviceSettingsView: View {
                                 )
                         )
 
-                        // Uyku Süresi Seçici
-                        VStack(alignment: .leading, spacing: 6) {
+                        // Uyku Süresi Seçici (Tıklanabilir iPhone Sayaç Çarkı Kartı)
+                        VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Text("Otomatik Uyku")
+                                Text(loc.tr("settings_sleep_title", default: "Otomatik Uyku"))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 Spacer()
-                                Menu {
-                                    Button("30 Saniye (30 sn - Minimum)") { selectSleepTimeout(30) }
-                                    Button("1 Dakika (60 sn)") { selectSleepTimeout(60) }
-                                    Button("3 Dakika (180 sn - Önerilen)") { selectSleepTimeout(180) }
-                                    Button("5 Dakika (300 sn)") { selectSleepTimeout(300) }
-                                    Button("10 Dakika (600 sn)") { selectSleepTimeout(600) }
-                                    Button("20 Dakika (1200 sn - Maksimum)") { selectSleepTimeout(1200) }
-                                    Button("Asla (Sürekli Açık)") { selectSleepTimeout(0) }
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        let currentVal = pendingSleepTimeout ?? keyboardManager.sleepTimeoutSeconds
-                                        Text(sleepLabel(currentVal))
-                                            .font(.system(size: 13, weight: .bold))
-                                            .foregroundColor(pendingSleepTimeout != nil ? .orange : .primary)
-                                        Image(systemName: "chevron.up.chevron.down")
-                                            .font(.caption2)
+                                
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                        isSleepPickerExpanded.toggle()
                                     }
+                                }) {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: isSleepPickerExpanded ? "chevron.up.circle.fill" : "slider.horizontal.2.square")
+                                        Text(isSleepPickerExpanded ? "Çarkı Kapat" : "Sayaç Çarkı İle Ayarla")
+                                    }
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(Color(red: 0.98, green: 0.18, blue: 0.38))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.12))
+                                    .clipShape(Capsule())
                                 }
-                                .menuStyle(.borderlessButton)
+                                .buttonStyle(.plain)
                             }
                             
-                            let displayVal = pendingSleepTimeout ?? keyboardManager.sleepTimeoutSeconds
-                            Text(sleepLabel(displayVal))
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(pendingSleepTimeout != nil ? .orange : .primary)
-                            Text("Hareketsizlikte LED'leri kapatıp uyku moduna geçerek pil tasarrufu sağlar.")
+                            let currentVal = pendingSleepTimeout ?? keyboardManager.sleepTimeoutSeconds
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(sleepLabel(currentVal))
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(pendingSleepTimeout != nil ? .orange : .primary)
+                                
+                                Text("• " + (currentVal == 0 ? "LED'ler sürekli açık kalır" : "\(currentVal) sn sonra uyku"))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Text(loc.tr("settings_sleep_desc", default: "Hareketsizlikte LED'leri kapatıp uyku moduna geçerek pil tasarrufu sağlar. Çarkı soldan sağa kaydırarak hassas ayarlayabilirsiniz."))
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
@@ -209,7 +224,42 @@ struct DeviceSettingsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(.ultraThinMaterial)
                         .cornerRadius(16)
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(pendingSleepTimeout != nil ? Color.orange.opacity(0.4) : Color.white.opacity(0.08), lineWidth: 1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(isSleepPickerExpanded ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.5) : (pendingSleepTimeout != nil ? Color.orange.opacity(0.4) : Color.white.opacity(0.08)), lineWidth: 1)
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                isSleepPickerExpanded.toggle()
+                            }
+                        }
+                    }
+
+                    // iPhone Tarzı Yatay Uyku Sayacı Çarkı (Soldan Sağa Kaydırmalı & Tırrr Tırrr Sesli)
+                    if isSleepPickerExpanded {
+                        HorizontalTimerWheelPicker(
+                            selectedSeconds: Binding(
+                                get: { pendingSleepTimeout ?? keyboardManager.sleepTimeoutSeconds },
+                                set: { pendingSleepTimeout = $0 }
+                            ),
+                            onSave: { newSeconds in
+                                commitSingleSleepTimeout(newSeconds)
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    isSleepPickerExpanded = false
+                                }
+                            },
+                            onCancel: {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    pendingSleepTimeout = nil
+                                    isSleepPickerExpanded = false
+                                }
+                            }
+                        )
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .top)),
+                            removal: .opacity.combined(with: .scale(scale: 0.98))
+                        ))
                     }
 
                     // Donanım Yanıt Süresi & Döner Tekerlek Ayarları
@@ -217,7 +267,7 @@ struct DeviceSettingsView: View {
                         // Tuş Tepki Filtresi (Debounce / LowDelay)
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                Text("Tuş Tepki Süresi (Debounce)")
+                                Text(loc.tr("settings_debounce_title", default: "Tuş Tepki Süresi (Debounce)"))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 Spacer()
@@ -243,7 +293,7 @@ struct DeviceSettingsView: View {
                             Text(debounceLabel(displayVal))
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(pendingDebounceTime != nil ? .orange : .primary)
-                            Text("Tuş vuruş filtreleme süresi. Düşük değerler gecikmeyi azaltır.")
+                            Text(loc.tr("settings_debounce_desc", default: "Tuş vuruş filtreleme süresi. Düşük değerler gecikmeyi azaltır."))
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
@@ -256,7 +306,7 @@ struct DeviceSettingsView: View {
                         // Döner Tekerlek (Knob / Wheel) Donanım Rehber Kartı
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
-                                Text("Döner Tekerlek (Knob)")
+                                Text(loc.tr("settings_knob_title", default: "Döner Tekerlek (Knob)"))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 Spacer()
@@ -280,15 +330,15 @@ struct DeviceSettingsView: View {
                                 }
                                 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("Ses ⟷ RGB Parlaklık Geçişi")
+                                    Text(loc.tr("manual_knob_hold_action", default: "Ses Kontrolcüsü ⟷ Aydınlatma Kontrolcüsü"))
                                         .font(.system(size: 15, weight: .bold))
-                                    Text("Donanımsal Geçiş (3 Işık Kırpması)")
+                                    Text(loc.tr("manual_knob_badge", default: "Donanımsal Geçiş") + " (3 Işık Kırpması)")
                                         .font(.caption2)
                                         .foregroundColor(.secondary)
                                 }
                             }
                             
-                            Text("Tekerleğe dik biçimde 3-5 saniye basılı tuttuğunuzda klavye ışıkları 3 defa kırparak ses ve RGB parlaklık kontrolü arasında donanımsal geçiş yapar.")
+                            Text("Tekerleğe dik biçimde 3-5 saniye basılı tuttuğunuzda klavye ışıkları 3 defa kırparak ses kontrolcüsü ve aydınlatma kontrolcüsü arasında donanımsal geçiş yapar.")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .lineSpacing(3)
@@ -456,7 +506,7 @@ struct DeviceSettingsView: View {
                         .foregroundColor(.secondary)
                         .tracking(1.2)
 
-                    VStack(spacing: 14) {
+                    VStack(alignment: .leading, spacing: 14) {
                         // Donanım Yazılımı & Sürücü Güncelleme Denetimi
                         HStack {
                             VStack(alignment: .leading, spacing: 3) {
@@ -485,7 +535,7 @@ struct DeviceSettingsView: View {
                         Divider().background(Color.white.opacity(0.06))
 
                         // Başlangıçta Otomatik Çalıştırma
-                        Toggle(isOn: $runAtStartup) {
+                        HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(loc.tr("tc_msg11", default: "Otomatik Çalıştırma (Başlangıçta Aç)"))
                                     .font(.system(size: 14, weight: .semibold))
@@ -493,13 +543,17 @@ struct DeviceSettingsView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
+                            Spacer()
+                            Toggle("", isOn: $runAtStartup)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
                         }
-                        .toggleStyle(.switch)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
                         Divider().background(Color.white.opacity(0.06))
 
                         // Kapatma Davranışı
-                        Toggle(isOn: $closeToTray) {
+                        HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(loc.tr("tc_msg8", default: "X Kapatıldığında Menü Çubuğunda / Tepside Kal"))
                                     .font(.system(size: 14, weight: .semibold))
@@ -507,8 +561,12 @@ struct DeviceSettingsView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
+                            Spacer()
+                            Toggle("", isOn: $closeToTray)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
                         }
-                        .toggleStyle(.switch)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(18)
                     .background(.ultraThinMaterial)
@@ -516,35 +574,7 @@ struct DeviceSettingsView: View {
                     .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.08), lineWidth: 1))
                 }
 
-                // 6. BLE BATARYA ENDPOINT KEŞFİ
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Label("BLE BATARYA ENDPOINT'İ", systemImage: "wave.3.right.circle")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.secondary)
-                            .tracking(1.2)
-                        Spacer()
-                        Button("Tekrar Tara") {
-                            keyboardManager.scanBLEBatteryEndpoint()
-                        }
-                        .buttonStyle(.bordered)
-                    }
 
-                    Text("IKG-455 BT 5.0 üzerindeki okunabilir ve bildirim gönderen characteristic'ler yalnızca okunur. 2A19 bulunursa batarya yüzdesinin kalıcı BLE adresi kaydedilir.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    VStack(spacing: 0) {
-                        detailRow(title: "Tarama durumu", value: keyboardManager.bleBatteryStatus)
-                        Divider().padding(.horizontal, 12)
-                        detailRow(title: "Batarya adresi", value: keyboardManager.bleBatteryEndpoint)
-                        Divider().padding(.horizontal, 12)
-                        detailRow(title: "Son okunan değer", value: keyboardManager.lastBLEValue)
-                    }
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(16)
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.08), lineWidth: 1))
-                }
 
                 // 6. DONANIM BİLGİSİ TABLOSU
                 VStack(alignment: .leading, spacing: 14) {
@@ -590,7 +620,7 @@ struct DeviceSettingsView: View {
                         Spacer()
 
                         Button(action: {
-                            keyboardManager.resetToFactoryDefaults()
+                            showResetConfirmAlert = true
                         }) {
                             Label(loc.tr("tc_restore", default: "Fabrika Ayarlarına Sıfırla"), systemImage: "arrow.counterclockwise")
                         }
@@ -604,14 +634,38 @@ struct DeviceSettingsView: View {
                 }
             }
             .padding(24)
+            .alert(loc.tr("confirm_profile_switch_title", default: "Profili Değiştir"), isPresented: $showProfileSwitchAlert) {
+                Button(loc.tr("common_switch", default: "Değiştir")) {
+                    if let target = pendingProfileIndex {
+                        withAnimation(.spring(response: 0.3)) {
+                            selectedProfileIndex = target
+                        }
+                    }
+                    pendingProfileIndex = nil
+                }
+                Button(loc.tr("tc_cancel", default: "İptal"), role: .cancel) {
+                    pendingProfileIndex = nil
+                }
+            } message: {
+                Text(String(format: loc.tr("confirm_profile_switch_msg", default: "'%@' profiline geçmek istediğinizden emin misiniz?"), pendingProfileName))
+            }
+            .alert(loc.tr("confirm_reset_title", default: "Fabrika Ayarlarına Sıfırla"), isPresented: $showResetConfirmAlert) {
+                Button(loc.tr("settings_reset_btn", default: "Sıfırla"), role: .destructive) {
+                    keyboardManager.resetToFactoryDefaults()
+                }
+                Button(loc.tr("tc_cancel", default: "İptal"), role: .cancel) { }
+            } message: {
+                Text(loc.tr("confirm_reset_msg", default: "Klavyenizi fabrika ayarlarına sıfırlamak istediğinizden emin misiniz? Tüm ışık efektleri ve özel tuş atamaları sıfırlanacaktır."))
+            }
         }
     }
 
     private func profileCard(index: Int, name: String, desc: String, icon: String) -> some View {
         Button(action: {
-            withAnimation(.spring(response: 0.3)) {
-                selectedProfileIndex = index
-            }
+            guard selectedProfileIndex != index else { return }
+            pendingProfileIndex = index
+            pendingProfileName = name
+            showProfileSwitchAlert = true
         }) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -656,23 +710,47 @@ struct DeviceSettingsView: View {
 
     private func sleepLabel(_ seconds: Int) -> String {
         switch seconds {
-        case 0: return "Asla (Sürekli Açık)"
-        case 30: return "30 Saniye (30 sn)"
-        case 60: return "1 Dakika (60 sn)"
-        case 180: return "3 Dakika (180 sn)"
-        case 300: return "5 Dakika (300 sn)"
-        case 600: return "10 Dakika (600 sn)"
-        case 1200: return "20 Dakika (1200 sn)"
-        default: return "\(seconds) Saniye"
+        case 0: return loc.tr("settings_sleep_never", default: "Asla (Sürekli Açık)")
+        case 20: return "20 Saniye (20 sn)"
+        case 30: return loc.tr("settings_sleep_30s", default: "30 Saniye (30 sn)")
+        case 60: return loc.tr("settings_sleep_1m", default: "1 Dakika (60 sn)")
+        case 180: return loc.tr("settings_sleep_3m", default: "3 Dakika (180 sn)")
+        case 300: return loc.tr("settings_sleep_5m", default: "5 Dakika (300 sn)")
+        case 600: return loc.tr("settings_sleep_10m", default: "10 Dakika (600 sn)")
+        case 1200: return loc.tr("settings_sleep_20m", default: "20 Dakika (1200 sn)")
+        default:
+            let m = seconds / 60
+            let s = seconds % 60
+            if m == 0 {
+                return "\(s) Saniye"
+            } else if s == 0 {
+                return "\(m) Dakika"
+            } else {
+                return "\(m) Dakika \(s) Saniye"
+            }
+        }
+    }
+
+    private func commitSingleSleepTimeout(_ sec: Int) {
+        keyboardManager.setSleepTimeout(seconds: sec)
+        pendingSleepTimeout = nil
+        hasUnsavedHardwareSettings = pendingDebounceTime != nil
+        hardwareSettingsSavedFeedback = "Otomatik uyku süresi \(sleepLabel(sec)) olarak ayarlandı!"
+        keyboardManager.triggerSavedSuccess(message: "Uyku: \(sleepLabel(sec))")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            withAnimation {
+                hardwareSettingsSavedFeedback = nil
+            }
         }
     }
 
     private func debounceLabel(_ ms: Int) -> String {
         switch ms {
-        case 2: return "2 ms (Ultra Hızlı Espor)"
-        case 4: return "4 ms (Hızlı)"
-        case 8: return "8 ms (Dengeli - Önerilen)"
-        case 16: return "16 ms (Kararlı)"
+        case 2: return loc.tr("settings_debounce_2ms", default: "2 ms (Ultra Hızlı Espor)")
+        case 4: return loc.tr("settings_debounce_4ms", default: "4 ms (Hızlı)")
+        case 8: return loc.tr("settings_debounce_8ms", default: "8 ms (Dengeli - Önerilen)")
+        case 16: return loc.tr("settings_debounce_16ms", default: "16 ms (Kararlı)")
         default: return "\(ms) ms"
         }
     }

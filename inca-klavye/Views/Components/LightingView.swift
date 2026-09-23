@@ -6,6 +6,13 @@ enum LightingSection: String, CaseIterable, Identifiable {
     case musicSync = "Müzik Ritmi"
     
     var id: String { self.rawValue }
+    func title(loc: LocalizationManager = .shared) -> String {
+        switch self {
+        case .mainKeys: return loc.tr("tc_kb1", default: "Aydınlatma Efektleri")
+        case .customLighting: return loc.tr("lighting_custom_header", default: "Kişisel Aydınlatma")
+        case .musicSync: return loc.tr("tc_music1", default: "Müzik Ritmi")
+        }
+    }
     var icon: String {
         switch self {
         case .mainKeys: return "sparkles"
@@ -17,6 +24,7 @@ enum LightingSection: String, CaseIterable, Identifiable {
 
 struct LightingView: View {
     @ObservedObject var keyboardManager: KeyboardManager
+    @ObservedObject var loc = LocalizationManager.shared
     
     @State private var activeSection: LightingSection = .mainKeys
     
@@ -38,19 +46,24 @@ struct LightingView: View {
     @State private var customKeyColors: [String: Color] = [:]
     @State private var selectedKeyIdForCustom: String? = nil
     @State private var customMatrixSuccessFeedback: String? = nil
+    @State private var isShowingBrushColorPicker: Bool = false
+    @State private var isShowingKeyColorPicker: Bool = false
+    @State private var isHoveringApplyButton: Bool = false
 
-
+    // Renk Paleti Hover (Üzerine Gelme) Durumları
+    @State private var hoveredColorName: String? = nil
+    @State private var hoveredBrushColorName: String? = nil
 
     // Apple Music tarzı canlı RGB renk paleti
     let presetColors: [(name: String, color: Color)] = [
-        ("Apple Kırmızı", Color(red: 0.98, green: 0.18, blue: 0.38)),
-        ("Neon Cyan", Color(red: 0.0, green: 0.85, blue: 1.0)),
-        ("Aurora Yeşil", Color(red: 0.2, green: 0.95, blue: 0.45)),
-        ("Elektrik Mor", Color(red: 0.68, green: 0.26, blue: 0.98)),
-        ("Güneş Sarısı", Color(red: 1.0, green: 0.82, blue: 0.1)),
-        ("Ateş Turuncu", Color(red: 1.0, green: 0.45, blue: 0.1)),
-        ("Buz Beyazı", Color.white),
-        ("Koyu Mavi", Color(red: 0.0, green: 0.48, blue: 1.0))
+        ("Kırmızı", Color(red: 0.98, green: 0.18, blue: 0.38)),
+        ("Açık Mavi (Cyan)", Color(red: 0.0, green: 0.85, blue: 1.0)),
+        ("Yeşil", Color(red: 0.2, green: 0.95, blue: 0.45)),
+        ("Mor", Color(red: 0.68, green: 0.26, blue: 0.98)),
+        ("Sarı", Color(red: 1.0, green: 0.82, blue: 0.1)),
+        ("Turuncu", Color(red: 1.0, green: 0.45, blue: 0.1)),
+        ("Beyaz", Color.white),
+        ("Mavi", Color(red: 0.0, green: 0.48, blue: 1.0))
     ]
 
     var body: some View {
@@ -76,7 +89,7 @@ struct LightingView: View {
                             HStack(spacing: 8) {
                                 Image(systemName: section.icon)
                                     .font(.system(size: 13, weight: .semibold))
-                                Text(section.rawValue)
+                                Text(section.title(loc: loc))
                                     .font(.system(size: 13, weight: activeSection == section ? .bold : .medium))
                             }
                             .padding(.vertical, 8)
@@ -98,7 +111,7 @@ struct LightingView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: 11, weight: .bold))
-                            Text("Yenile")
+                            Text(loc.tr("tc_refresh", default: "Yenile"))
                                 .font(.system(size: 12, weight: .bold))
                         }
                         .padding(.vertical, 7)
@@ -111,7 +124,7 @@ struct LightingView: View {
                         .shadow(color: Color.blue.opacity(0.3), radius: 6, x: 0, y: 2)
                     }
                     .buttonStyle(.plain)
-                    .help("Klavyenin mevcut donanım aydınlatma modunu ve parlaklığını sorgular")
+                    .help(loc.tr("tc_refresh_help", default: "Klavyenin mevcut donanım aydınlatma modunu ve parlaklığını sorgular"))
                 }
 
                 // 3. Bölüm İçeriği
@@ -183,12 +196,12 @@ struct LightingView: View {
             // Efekt Seçici Grid
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
-                    Text("ANA AYDINLATMA EFEKTLERİ")
+                    Text(loc.tr("lighting_main_header", default: "ANA AYDINLATMA EFEKTLERİ"))
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.secondary)
                         .tracking(1.2)
                     Spacer()
-                    Text("\(filteredEffects.count) Donanım Modu")
+                    Text("\(filteredEffects.count) " + loc.tr("lighting_modes_count", default: "Donanım Modu"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -226,9 +239,9 @@ struct LightingView: View {
                     .font(.system(size: 26))
                     .foregroundColor(sideLedColor)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Empousa Çevresel Yan Şerit LED (Side Glow)")
+                    Text(loc.tr("lighting_side_title", default: "Empousa Çevresel Yan Şerit LED (Side Glow)"))
                         .font(.system(size: 14, weight: .bold))
-                    Text("Klavyenin alt ve yan şeritlerinden masaya yansıyan dinamik atmosfer aydınlatmasını özelleştirin.")
+                    Text(loc.tr("lighting_side_desc", default: "Klavyenin alt ve yan şeritlerinden masaya yansıyan dinamik atmosfer aydınlatmasını özelleştirin."))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -251,12 +264,12 @@ struct LightingView: View {
             // Yan Şerit Efektleri Grid
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
-                    Text("YAN ŞERİT EFEKTLERİ")
+                    Text(loc.tr("lighting_side_header", default: "YAN ŞERİT EFEKTLERİ"))
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.secondary)
                         .tracking(1.2)
                     Spacer()
-                    Text("\(SideLEDEffect.allCases.count) Donanım Modu")
+                    Text("\(SideLEDEffect.allCases.count) " + loc.tr("lighting_modes_count", default: "Donanım Modu"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -302,9 +315,9 @@ struct LightingView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Kişisel Tuş Aydınlatması (LedOpt 19)")
+                    Text(loc.tr("lighting_custom_header", default: "Kişisel Tuş Aydınlatması"))
                         .font(.system(size: 16, weight: .bold))
-                    Text("126 tuşun tamamını dilediğiniz renkle bağımsız olarak özelleştirin. Aşağıdaki fırça rengini seçip klavyedeki tuşlara tıklayarak kendi temanızı oluşturun.")
+                    Text(loc.tr("lighting_palette_banner_desc", default: "126 tuşun tamamını dilediğiniz renkle bağımsız olarak özelleştirin. Aşağıdaki fırça rengini seçip klavyedeki tuşlara tıklayarak kendi temanızı oluşturun."))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -333,14 +346,62 @@ struct LightingView: View {
 
             // Fırça Renkleri ve Hızlı Şablonlar
             VStack(alignment: .leading, spacing: 14) {
-                HStack {
-                    Text("FIRÇA RENGİ")
+                HStack(spacing: 8) {
+                    Text(loc.tr("lighting_brush_title", default: "FIRÇA RENGİ"))
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.secondary)
                         .tracking(1.2)
+
+                    if let hovered = hoveredBrushColorName {
+                        HStack(spacing: 5) {
+                            Text("•")
+                                .foregroundColor(.secondary)
+                            Text(hovered)
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .foregroundColor(.primary)
+                        }
+                        .transition(.opacity)
+                    }
+
                     Spacer()
-                    ColorPicker("Özel Fırça Rengi", selection: $customBrushColor)
-                        .labelsHidden()
+
+                    // Modern Uygulama İçi Renk Seçici Butonu
+                    Button(action: {
+                        isShowingBrushColorPicker = true
+                    }) {
+                        HStack(spacing: 5) {
+                            Circle()
+                                .fill(customBrushColor)
+                                .frame(width: 14, height: 14)
+                                .shadow(color: customBrushColor.opacity(0.6), radius: 3)
+                            Image(systemName: "paintpalette.fill")
+                                .font(.system(size: 10))
+                            Text(loc.tr("lighting_custom_brush_btn", default: "Özel Renk"))
+                                .font(.system(size: 11, weight: .bold))
+                        }
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4.5)
+                        .background(Color.white.opacity(0.1))
+                        .foregroundColor(.primary)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .popover(isPresented: $isShowingBrushColorPicker, arrowEdge: .bottom) {
+                        ModernColorPickerView(
+                            selectedColor: $customBrushColor,
+                            title: loc.tr("lighting_brush_picker_title", default: "Fırça Rengi Seçici"),
+                            onColorChanged: { newColor in
+                                customBrushColor = newColor
+                            },
+                            onClose: {
+                                isShowingBrushColorPicker = false
+                            }
+                        )
+                    }
                 }
 
                 HStack(spacing: 12) {
@@ -358,8 +419,35 @@ struct LightingView: View {
                                         .stroke(Color.white, lineWidth: customBrushColor == preset.color ? 2.5 : 0)
                                 )
                                 .shadow(color: preset.color.opacity(customBrushColor == preset.color ? 0.7 : 0.2), radius: 6)
+                                .scaleEffect(hoveredBrushColorName == preset.name ? 1.15 : 1.0)
+                                .overlay(alignment: .top) {
+                                    if hoveredBrushColorName == preset.name {
+                                        Text(preset.name)
+                                            .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 3.5)
+                                            .background(
+                                                Capsule()
+                                                    .fill(Color.black.opacity(0.9))
+                                                    .shadow(color: preset.color.opacity(0.5), radius: 6, y: 2)
+                                            )
+                                            .overlay(
+                                                Capsule().stroke(preset.color.opacity(0.6), lineWidth: 1.5)
+                                            )
+                                            .fixedSize()
+                                            .offset(y: -32)
+                                            .transition(.opacity.combined(with: .scale(scale: 0.85)))
+                                            .zIndex(100)
+                                    }
+                                }
                         }
                         .buttonStyle(.plain)
+                        .onHover { isHovered in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                hoveredBrushColorName = isHovered ? preset.name : nil
+                            }
+                        }
                         .help(preset.name)
                     }
 
@@ -427,15 +515,23 @@ struct LightingView: View {
             .cornerRadius(16)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.08), lineWidth: 1))
 
+            // 5 Adet Bilgisayar Diski Profil Slotu (İsteyen kullanıcı diske kaydeder)
+            CustomLightingSlotsView(
+                customKeyColors: $customKeyColors,
+                onSlotApplied: {
+                    markUnsaved()
+                }
+            )
+
             // İnteraktif Klavye Matrisi
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("İNTERAKTİF TUŞ MATRİSİ (BOYAMAK İÇİN TIKLAYIN)")
+                    Text(loc.tr("lighting_matrix_header", default: "İNTERAKTİF TUŞ MATRİSİ (BOYAMAK İÇİN TIKLAYIN)"))
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.secondary)
                         .tracking(1.2)
                     Spacer()
-                    Text("\(customKeyColors.count) Tuş Renklendirildi")
+                    Text("\(customKeyColors.count) " + loc.tr("lighting_painted_keys_count", default: "Tuş Renklendirildi"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -444,52 +540,306 @@ struct LightingView: View {
                     keyboardManager: keyboardManager,
                     selectedKeyId: $selectedKeyIdForCustom,
                     perKeyColors: customKeyColors,
+                    showFooterBar: false,
                     onKeySelected: { key in
-                        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
-                            customKeyColors[key.id] = customBrushColor
+                        if selectedKeyIdForCustom == key.id {
+                            // Tuş zaten seçiliyken tekrar tıklanırsa hızlı fırçala
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                customKeyColors[key.id] = customBrushColor
+                                markUnsaved()
+                            }
+                        } else {
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                selectedKeyIdForCustom = key.id
+                            }
                         }
                     }
                 )
+
+                // Seçili Tuş Aydınlatma Rengi & Modern Renk Seçici Barı
+                if let keyId = selectedKeyIdForCustom {
+                    let keyColor = customKeyColors[keyId] ?? Color.black
+                    let isKeyPainted = customKeyColors[keyId] != nil
+
+                    HStack(spacing: 12) {
+                        // Başında yuvarlak şeklinde rengin neye benzediğini gösteren daire
+                        Button(action: {
+                            isShowingKeyColorPicker = true
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(keyColor)
+                                    .frame(width: 24, height: 24)
+                                    .shadow(color: keyColor.opacity(isKeyPainted ? 0.8 : 0.2), radius: 6)
+
+                                Circle()
+                                    .stroke(Color.white.opacity(0.4), lineWidth: 1.5)
+                                    .frame(width: 24, height: 24)
+
+                                if !isKeyPainted {
+                                    Image(systemName: "slash.circle")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .help("Rengi modern renk seçiciyle değiştirmek için tıklayın")
+
+                        // Seçili Tuş & Aydınlatma Rengi (RGB ve Hex)
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 6) {
+                                Text(loc.tr("lighting_selected_key", default: "Seçili Tuş:"))
+                                    .font(.system(size: 11.5, weight: .medium))
+                                    .foregroundColor(.secondary)
+                                Text(keyId)
+                                    .font(.system(size: 13, weight: .black, design: .rounded))
+                                    .foregroundColor(.primary)
+
+                                if !isKeyPainted {
+                                    Text(loc.tr("lighting_unpainted_key", default: "• Boyanmamış (Işıksız)"))
+                                        .font(.system(size: 10.5, weight: .medium))
+                                        .foregroundColor(.secondary.opacity(0.8))
+                                }
+                            }
+
+                            HStack(spacing: 6) {
+                                Text(loc.tr("lighting_key_color", default: "Aydınlatma Rengi:"))
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.secondary)
+
+                                Text(keyColor.rgbString)
+                                    .font(.system(size: 11.5, weight: .bold, design: .monospaced))
+                                    .foregroundColor(isKeyPainted ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
+
+                                Text("• \(keyColor.toHex())")
+                                    .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        Spacer()
+
+                        // 1. Modern Color Picker Butonu
+                        Button(action: {
+                            isShowingKeyColorPicker = true
+                        }) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "paintpalette.fill")
+                                Text("Rengi Özelleştir")
+                                    .font(.system(size: 11.5, weight: .bold))
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                            .shadow(color: Color.purple.opacity(0.4), radius: 6, y: 2)
+                        }
+                        .buttonStyle(.plain)
+                        .popover(isPresented: $isShowingKeyColorPicker, arrowEdge: .top) {
+                            ModernColorPickerView(
+                                selectedColor: Binding(
+                                    get: { customKeyColors[keyId] ?? customBrushColor },
+                                    set: { newCol in
+                                        customKeyColors[keyId] = newCol
+                                        markUnsaved()
+                                    }
+                                ),
+                                title: "\(keyId) Tuşu Rengi",
+                                onColorChanged: { newCol in
+                                    customKeyColors[keyId] = newCol
+                                    markUnsaved()
+                                },
+                                onClose: {
+                                    isShowingKeyColorPicker = false
+                                }
+                            )
+                        }
+
+                        // 2. Fırça Rengiyle Boya Butonu
+                        Button(action: {
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                customKeyColors[keyId] = customBrushColor
+                                markUnsaved()
+                            }
+                        }) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "paintbrush.fill")
+                                Text("Fırçayla Boya")
+                                    .font(.system(size: 11, weight: .semibold))
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.white.opacity(0.12))
+                            .foregroundColor(.primary)
+                            .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Bu tuşu aktif fırça rengine (\(customBrushColor.rgbString)) boyar")
+
+                        // 3. Söndür Butonu
+                        if isKeyPainted {
+                            Button(action: {
+                                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                    customKeyColors.removeValue(forKey: keyId)
+                                    markUnsaved()
+                                }
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "moon.fill")
+                                    Text("Söndür")
+                                        .font(.system(size: 10.5, weight: .medium))
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(Color.red.opacity(0.12))
+                                .foregroundColor(.red)
+                                .cornerRadius(8)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Bu tuşun aydınlatmasını kapat (söndür)")
+                        }
+                    }
+                    .padding(12)
+                    .background(Color.white.opacity(0.04))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                } else {
+                    HStack(spacing: 8) {
+                        Image(systemName: "hand.tap.fill")
+                            .foregroundColor(Color(red: 0.98, green: 0.18, blue: 0.38))
+                            .font(.system(size: 12))
+                        Text("Aydınlatmasını incelemek veya rengini değiştirmek istediğiniz tuşun üzerine tıklayın.")
+                            .font(.system(size: 11.5, weight: .medium))
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.white.opacity(0.02))
+                    .cornerRadius(8)
+                }
             }
 
-            // Klavyeye Gönder / Uygula Barı
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Özel Renk Matrisini Uygula")
-                        .font(.system(size: 13, weight: .bold))
-                    Text(keyboardManager.connectionType == .wiredUSB ? "Kablolu USB modunda 126 tuşun tam RGB profili doğrudan donanım çipine aktarılır." : "Özel tuş matrisini tam renkli yüklemek için klavyeyi Type-C kablosuyla bağlayın.")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+            // Klavyeye Gönder / Donanım Hafızasına Kaydet Barı
+            HStack(spacing: 16) {
+                // Donanım Hafızası İkon Rozeti (macOS / Control Center stili)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 11)
+                        .fill(Color.white.opacity(0.06))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 11)
+                                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                        )
+                    Image(systemName: "memorychip")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(Color(red: 0.98, green: 0.18, blue: 0.38))
+                }
+                .frame(width: 42, height: 42)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(loc.tr("lighting_hw_write_title", default: "Donanım Hafızasına Yaz"))
+                        .font(.system(size: 13.5, weight: .semibold))
+                        .foregroundColor(.primary)
+
+                    HStack(spacing: 6) {
+                        if keyboardManager.connectionType == .wiredUSB {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 6, height: 6)
+                            Text(loc.tr("lighting_hw_wired_badge", default: "Kablolu Bağlantı"))
+                                .font(.system(size: 11.5, weight: .medium))
+                                .foregroundColor(.green.opacity(0.9))
+                            Text(loc.tr("lighting_hw_wired_desc", default: "• 126 tuşun RGB renk matrisi doğrudan klavyenin MCU çipine aktarılır."))
+                                .font(.system(size: 11.5))
+                                .foregroundColor(.secondary)
+                        } else {
+                            Circle()
+                                .fill(Color.orange)
+                                .frame(width: 6, height: 6)
+                            Text(loc.tr("lighting_hw_wireless_badge", default: "Kablosuz Mod"))
+                                .font(.system(size: 11.5, weight: .medium))
+                                .foregroundColor(.orange.opacity(0.9))
+                            Text(loc.tr("lighting_hw_wireless_desc", default: "• Tam renkli donanım aktarımı için Type-C kablosu önerilir."))
+                                .font(.system(size: 11.5))
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
 
                 Spacer()
 
                 Button(action: sendCustomMatrixToKeyboard) {
                     HStack(spacing: 8) {
-                        Image(systemName: "paperplane.fill")
-                        Text("Klavyeye Yükle & Kaydet")
-                            .fontWeight(.bold)
+                        if customMatrixSuccessFeedback != nil {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 12.5, weight: .bold))
+                            Text(loc.tr("lighting_hw_saved_btn", default: "Klavyeye Kaydedildi"))
+                                .font(.system(size: 13, weight: .semibold))
+                        } else {
+                            Image(systemName: "arrow.down.circle.fill")
+                                .font(.system(size: 13, weight: .medium))
+                            Text(loc.tr("lighting_hw_upload_btn", default: "Klavyeye Yükle & Kaydet"))
+                                .font(.system(size: 13, weight: .semibold))
+                        }
                     }
-                    .font(.system(size: 13))
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 9)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8.5)
                     .background(
                         LinearGradient(
-                            colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                            colors: customMatrixSuccessFeedback != nil
+                                ? [Color.green.opacity(0.85), Color.green.opacity(0.7)]
+                                : [
+                                    Color(red: 0.98, green: 0.22, blue: 0.42),
+                                    Color(red: 0.86, green: 0.12, blue: 0.28)
+                                ],
+                            startPoint: .top,
+                            endPoint: .bottom
                         )
                     )
                     .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(color: Color.purple.opacity(0.35), radius: 8, x: 0, y: 3)
+                    .cornerRadius(9)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 9)
+                            .stroke(Color.white.opacity(isHoveringApplyButton ? 0.35 : 0.2), lineWidth: 1)
+                    )
+                    .shadow(
+                        color: customMatrixSuccessFeedback != nil
+                            ? Color.green.opacity(0.3)
+                            : (isHoveringApplyButton
+                                ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.35)
+                                : Color.black.opacity(0.25)),
+                        radius: isHoveringApplyButton ? 6 : 4,
+                        x: 0,
+                        y: 2
+                    )
+                    .scaleEffect(isHoveringApplyButton ? 1.015 : 1.0)
+                    .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isHoveringApplyButton)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.8), value: customMatrixSuccessFeedback)
                 }
                 .buttonStyle(.plain)
+                .onHover { hovering in
+                    isHoveringApplyButton = hovering
+                }
             }
-            .padding(16)
+            .padding(14)
             .background(.ultraThinMaterial)
-            .cornerRadius(16)
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.08), lineWidth: 1))
+            .cornerRadius(14)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            )
         }
     }
 
@@ -712,7 +1062,7 @@ struct LightingView: View {
         onColorChange: @escaping () -> Void
     ) -> some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("HIZLI AYARLAR")
+            Text(loc.tr("lighting_quick_settings", default: "HIZLI AYARLAR"))
                 .font(.system(size: 12, weight: .bold))
                 .foregroundColor(.secondary)
                 .tracking(1.2)
@@ -721,10 +1071,10 @@ struct LightingView: View {
                 // Parlaklık Slider
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Label("Parlaklık", systemImage: "sun.max.fill")
+                        Label(loc.tr("lighting_brightness", default: "Parlaklık"), systemImage: "sun.max.fill")
                             .font(.system(size: 13, weight: .semibold))
                         Spacer()
-                        Text(brightnessValue.wrappedValue == 0 ? "KAPALI (0/4)" : "Seviye \(Int(round(brightnessValue.wrappedValue / 25.0)))/4")
+                        Text(brightnessValue.wrappedValue == 0 ? loc.tr("lighting_off", default: "KAPALI") + " (0/4)" : loc.tr("lighting_level", default: "Seviye") + " \(Int(round(brightnessValue.wrappedValue / 25.0)))/4")
                             .font(.system(size: 13, weight: .bold, design: .monospaced))
                             .foregroundColor(brightnessValue.wrappedValue == 0 ? .red : .secondary)
                     }
@@ -748,10 +1098,10 @@ struct LightingView: View {
                 // Efekt Hızı Slider
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Label("Efekt Hızı", systemImage: "speedometer")
+                        Label(loc.tr("lighting_speed", default: "Efekt Hızı"), systemImage: "speedometer")
                             .font(.system(size: 13, weight: .semibold))
                         Spacer()
-                        Text("Seviye \(Int(speedValue.wrappedValue) + 1)/5")
+                        Text(loc.tr("lighting_level", default: "Seviye") + " \(Int(speedValue.wrappedValue) + 1)/5")
                             .font(.system(size: 13, weight: .bold, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
@@ -775,15 +1125,27 @@ struct LightingView: View {
 
             // Renk Paleti & Picker
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("RENK PALETİ")
+                HStack(spacing: 8) {
+                    Text(loc.tr("lighting_palette", default: "RENK PALETİ"))
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.secondary)
                         .tracking(1.2)
+
+                    if let hovered = hoveredColorName {
+                        HStack(spacing: 5) {
+                            Text("•")
+                                .foregroundColor(.secondary)
+                            Text(hovered)
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .foregroundColor(.primary)
+                        }
+                        .transition(.opacity)
+                    }
+
                     Spacer()
                     // Çok Renkli modu açıksa color picker'ı gizle
                     if !isMulticolor.wrappedValue {
-                        ColorPicker("Özel Renk Seç", selection: selectedColor)
+                        ColorPicker(loc.tr("lighting_custom_color", default: "Özel Renk Seç"), selection: selectedColor)
                             .labelsHidden()
                             .onChange(of: selectedColor.wrappedValue) { _, _ in
                                 onColorChange()
@@ -822,8 +1184,35 @@ struct LightingView: View {
                                         .shadow(color: .black.opacity(0.5), radius: 2)
                                 }
                             }
+                            .scaleEffect(hoveredColorName == "Çok Renkli (Gökkuşağı)" ? 1.15 : 1.0)
+                            .overlay(alignment: .top) {
+                                if hoveredColorName == "Çok Renkli (Gökkuşağı)" {
+                                    Text("Çok Renkli (Gökkuşağı)")
+                                        .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 9)
+                                        .padding(.vertical, 3.5)
+                                        .background(
+                                            Capsule()
+                                                .fill(Color.black.opacity(0.9))
+                                                .shadow(color: Color.purple.opacity(0.5), radius: 6, y: 2)
+                                        )
+                                        .overlay(
+                                            Capsule().stroke(Color.purple.opacity(0.6), lineWidth: 1.5)
+                                        )
+                                        .fixedSize()
+                                        .offset(y: -34)
+                                        .transition(.opacity.combined(with: .scale(scale: 0.85)))
+                                        .zIndex(100)
+                                }
+                            }
                         }
                         .buttonStyle(.plain)
+                        .onHover { isHovered in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                hoveredColorName = isHovered ? "Çok Renkli (Gökkuşağı)" : nil
+                            }
+                        }
                         .help("Çok Renkli (Gökkuşağı Spektrumu)")
 
                         // Ayırıcı çizgi
@@ -850,8 +1239,35 @@ struct LightingView: View {
                                     )
                                 .shadow(color: preset.color.opacity(!isMulticolor.wrappedValue && selectedColor.wrappedValue == preset.color ? 0.7 : 0.2), radius: 6)
                                 .opacity(isMulticolor.wrappedValue ? 0.35 : 1.0)
+                                .scaleEffect(hoveredColorName == preset.name ? 1.15 : 1.0)
+                                .overlay(alignment: .top) {
+                                    if hoveredColorName == preset.name {
+                                        Text(preset.name)
+                                            .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 9)
+                                            .padding(.vertical, 3.5)
+                                            .background(
+                                                Capsule()
+                                                    .fill(Color.black.opacity(0.9))
+                                                    .shadow(color: preset.color.opacity(0.5), radius: 6, y: 2)
+                                            )
+                                            .overlay(
+                                                Capsule().stroke(preset.color.opacity(0.6), lineWidth: 1.5)
+                                            )
+                                            .fixedSize()
+                                            .offset(y: -34)
+                                            .transition(.opacity.combined(with: .scale(scale: 0.85)))
+                                            .zIndex(100)
+                                    }
+                                }
                         }
                         .buttonStyle(.plain)
+                        .onHover { isHovered in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                hoveredColorName = isHovered ? preset.name : nil
+                            }
+                        }
                         .help(preset.name)
                     }
                 }
