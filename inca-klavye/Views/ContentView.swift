@@ -232,55 +232,57 @@ struct ContentView: View {
         }
     }
     .toolbar {
-        // Sol Taraf 1: Info (Bilgi / Hakkında) Butonu
+        // Sol Taraf: Info Butonu ve hemen sağında boşluklu Döner Tekerlek (Knob) Butonu
         ToolbarItem(placement: .navigation) {
-            Button(action: {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                    selectedTab = .about
-                }
-            }) {
-                Image(systemName: selectedTab == .about ? "info.circle.fill" : "info.circle")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
-                    .frame(width: 28, height: 28)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.12) : Color.clear)
-                    )
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .help(loc.tr("tc_about", default: "Hakkında"))
-        }
-
-        // Sol Taraf 2: Döner Tekerlek (Knob) Modu Rozet Butonu (Info'nun hemen sağında, bağımsız buton)
-        ToolbarItem(placement: .navigation) {
-            if keyboardManager.isConnected {
+            HStack(spacing: 12) {
+                // Info (Bilgi / Hakkında) Butonu
                 Button(action: {
-                    // Tekerlek modu göstergesi (tıklanabilir bağımsız buton)
-                }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
-                        Text(keyboardManager.wheelMode.badgeTitle(loc: loc))
-                            .font(.system(size: 11, weight: .semibold))
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        selectedTab = .about
                     }
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 4.5)
-                    .background(Color.white.opacity(0.08))
-                    .cornerRadius(7)
-                    .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.white.opacity(0.12), lineWidth: 1))
+                }) {
+                    Image(systemName: selectedTab == .about ? "info.circle.fill" : "info.circle")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
+                        .frame(width: 28, height: 28)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.12) : Color.white.opacity(0.06))
+                        )
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .help(keyboardManager.wheelMode == .volume 
-                    ? "Döner Tekerlek: Ses Kontrolü (Fn+Tekerlek ile Aydınlatma moduna geçer)"
-                    : "Döner Tekerlek: Aydınlatma Kontrolü (Fn+Tekerlek ile Ses moduna geçer)")
+                .help(loc.tr("tc_about", default: "Hakkında"))
+
+                // Döner Tekerlek (Knob) Modu Rozet Butonu (Ayrı bağımsız buton, arada net boşluk)
+                if keyboardManager.isConnected {
+                    Button(action: {
+                        // Tekerlek modu göstergesi
+                    }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
+                                .font(.system(size: 11))
+                                .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
+                            Text(keyboardManager.wheelMode.badgeTitle(loc: loc))
+                                .font(.system(size: 11, weight: .semibold))
+                        }
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4.5)
+                        .background(Color.white.opacity(0.08))
+                        .cornerRadius(7)
+                        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.white.opacity(0.12), lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                    .help(keyboardManager.wheelMode == .volume 
+                        ? "Döner Tekerlek: Ses Kontrolü (Fn+Tekerlek ile Aydınlatma moduna geçer)"
+                        : "Döner Tekerlek: Aydınlatma Kontrolü (Fn+Tekerlek ile Ses moduna geçer)")
+                }
             }
         }
 
-        // Sağ Taraf 1: Hızlı Dil Seçeneği
-        ToolbarItem(placement: .automatic) {
+        // Sağ Taraf: En sağda Yardım Butonu, hemen solunda Dil Seçici
+        ToolbarItemGroup(placement: .automatic) {
+            // Dil Seçici (Yardım butonunun hemen solunda)
             Menu {
                 ForEach(AppLanguage.allCases) { lang in
                     Button(action: { loc.setLanguage(lang) }) {
@@ -297,69 +299,8 @@ struct ContentView: View {
                         .font(.system(size: 11, weight: .bold))
                 }
             }
-        }
 
-        // Sağ Taraf 2: Canlı Batarya Butonu (Bağımsız Buton)
-        ToolbarItem(placement: .automatic) {
-            if keyboardManager.isConnected {
-                Button(action: {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        selectedTab = .settings
-                    }
-                }) {
-                    if keyboardManager.batteryLevel >= 100 && keyboardManager.isCharging {
-                        HStack(spacing: 5) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.system(size: 12))
-                            Text("%100 • \(loc.tr("tc_fully_charged", default: "Tamamen Şarj Oldu"))")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .foregroundColor(.green)
-                        }
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(Color.green.opacity(0.12))
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.green.opacity(0.3), lineWidth: 1))
-                        .cornerRadius(8)
-                    } else if keyboardManager.batteryLevel <= 20 && !keyboardManager.isCharging {
-                        HStack(spacing: 5) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.red)
-                                .font(.system(size: 12))
-                            Text("%\(keyboardManager.batteryLevel) • \(loc.tr("tc_low_battery", default: "Batarya Zayıf"))")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .foregroundColor(.red)
-                        }
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(Color.red.opacity(0.14))
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.red.opacity(0.35), lineWidth: 1))
-                        .cornerRadius(8)
-                    } else {
-                        HStack(spacing: 5) {
-                            Image(systemName: batteryIcon)
-                                .foregroundColor(batteryColor)
-                            Text("%\(keyboardManager.batteryLevel)")
-                                .font(.system(size: 12, weight: .bold, design: .rounded))
-                            if keyboardManager.isCharging {
-                                Image(systemName: "bolt.fill")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.yellow)
-                            }
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.primary.opacity(0.06))
-                        .cornerRadius(8)
-                    }
-                }
-                .buttonStyle(.plain)
-                .help("Batarya Seviyesi: %\(keyboardManager.batteryLevel) (Ayarlar için tıklayın)")
-            }
-        }
-
-        // Sağ Taraf 3: Yardım (Kullanma Kılavuzu & Donanım Kısayolları) Butonu (Bağımsız Buton)
-        ToolbarItem(placement: .automatic) {
+            // Yardım (Kullanma Kılavuzu & Donanım Kısayolları) Butonu (En Sağda)
             Button(action: {
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                     selectedTab = .manual
@@ -371,7 +312,7 @@ struct ContentView: View {
                     .frame(width: 28, height: 28)
                     .background(
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(selectedTab == .manual ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.12) : Color.clear)
+                            .fill(selectedTab == .manual ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.12) : Color.white.opacity(0.06))
                     )
                     .contentShape(Rectangle())
             }
