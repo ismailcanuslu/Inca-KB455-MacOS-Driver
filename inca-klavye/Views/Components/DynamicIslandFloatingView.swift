@@ -236,30 +236,25 @@ struct DynamicIslandFloatingView: View {
                 }
                 .buttonStyle(.plain)
 
-                // Klavyeye Gönder Butonu
+                // Kaydet Butonu
                 Button(action: {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.72)) {
                         keyboardManager.onCommitChangesRequested?()
                     }
                 }) {
                     HStack(spacing: 5) {
-                        Image(systemName: "paperplane.fill")
+                        Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 10, weight: .bold))
-                        Text(loc.tr("island_save_btn", default: "Klavyeye Gönder"))
+                        Text(loc.tr("island_save_btn", default: "Kaydet"))
                             .font(.system(size: 11, weight: .bold))
                     }
                     .foregroundColor(.white)
-                    .padding(.horizontal, 13)
+                    .padding(.horizontal, 14)
                     .padding(.vertical, 5)
                     .background(
-                        LinearGradient(
-                            colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .fill(Color(red: 0.98, green: 0.18, blue: 0.38))
                     )
-                    .cornerRadius(7)
-                    .shadow(color: Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.4), radius: 6, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
             }

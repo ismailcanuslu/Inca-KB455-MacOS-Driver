@@ -104,27 +104,26 @@ struct LightingView: View {
                     }
                     Spacer()
 
-                    // Klavyeye Gönder Butonu (Kullanıcı dilediğinde komutları klavyeye gönderir)
+                    // Kaydet Butonu (Apple HIG tasarımına uygun sade, modern buton)
                     Button(action: {
                         commitChanges()
                     }) {
                         HStack(spacing: 6) {
-                            Image(systemName: "paperplane.fill")
-                                .font(.system(size: 11, weight: .bold))
-                            Text(loc.tr("island_save_btn", default: "Klavyeye Gönder"))
-                                .font(.system(size: 12, weight: .bold))
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 11, weight: .semibold))
+                            Text(loc.tr("island_save_btn", default: "Kaydet"))
+                                .font(.system(size: 12, weight: .semibold))
                         }
                         .padding(.vertical, 7)
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 16)
                         .foregroundColor(.white)
                         .background(
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(LinearGradient(colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple], startPoint: .leading, endPoint: .trailing))
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(Color(red: 0.98, green: 0.18, blue: 0.38))
                         )
-                        .shadow(color: Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.35), radius: 6, x: 0, y: 2)
                     }
                     .buttonStyle(.plain)
-                    .help("Seçili aydınlatma ve yan şerit ayarlarını klavyeye gönderir")
+                    .help("Seçili aydınlatma ve yan şerit ayarlarını klavyeye kaydeder")
 
                     // Klavyeden Donanım Aydınlatma Durumunu Yenile
                     Button(action: {
@@ -132,18 +131,21 @@ struct LightingView: View {
                     }) {
                         HStack(spacing: 6) {
                             Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.system(size: 11, weight: .semibold))
                             Text(loc.tr("tc_refresh", default: "Yenile"))
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.system(size: 12, weight: .medium))
                         }
                         .padding(.vertical, 7)
-                        .padding(.horizontal, 12)
-                        .foregroundColor(.white)
+                        .padding(.horizontal, 14)
+                        .foregroundColor(.primary)
                         .background(
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(LinearGradient(colors: [Color.blue, Color.purple], startPoint: .leading, endPoint: .trailing))
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(Color.white.opacity(0.08))
                         )
-                        .shadow(color: Color.blue.opacity(0.3), radius: 6, x: 0, y: 2)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                        )
                     }
                     .buttonStyle(.plain)
                     .help(loc.tr("tc_refresh_help", default: "Klavyenin mevcut donanım aydınlatma modunu ve parlaklığını sorgular"))

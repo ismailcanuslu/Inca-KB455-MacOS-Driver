@@ -356,7 +356,7 @@ struct CustomLightingView: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(loc.tr("lighting_hw_write_title", default: "Klavyeye Gönder"))
+                Text(loc.tr("lighting_hw_write_title", default: "Kaydet"))
                     .font(.system(size: 14, weight: .bold))
                 Text(loc.tr("lighting_hw_wired_desc", default: "• 126 tuşun renk ayarları doğrudan klavyenize aktarılır."))
                     .font(.caption2)
@@ -367,21 +367,17 @@ struct CustomLightingView: View {
 
             Button(action: saveCustomMatrixToKeyboard) {
                 HStack(spacing: 6) {
-                    Image(systemName: "paperplane.fill")
-                    Text(loc.tr("lighting_hw_upload_btn", default: "Klavyeye Gönder"))
+                    Image(systemName: "checkmark.circle.fill")
+                    Text(loc.tr("island_save_btn", default: "Kaydet"))
                 }
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 12, weight: .semibold))
                 .padding(.horizontal, 16)
-                .padding(.vertical, 9)
+                .padding(.vertical, 8)
                 .background(
-                    LinearGradient(
-                        colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color(red: 0.98, green: 0.18, blue: 0.38))
                 )
                 .foregroundColor(.white)
-                .cornerRadius(9)
             }
             .buttonStyle(.plain)
         }

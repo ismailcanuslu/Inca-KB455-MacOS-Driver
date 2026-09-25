@@ -99,27 +99,26 @@ struct MusicVisualizerView: View {
 
                         Spacer()
 
-                        // Klavyeye Gönder Butonu
+                        // Kaydet Butonu (Apple HIG tasarımına uygun sade, modern buton)
                         Button(action: {
                             sendMusicEffectToKeyboard()
                         }) {
                             HStack(spacing: 6) {
-                                Image(systemName: "paperplane.fill")
-                                    .font(.system(size: 11, weight: .bold))
-                                Text(loc.tr("island_save_btn", default: "Klavyeye Gönder"))
-                                    .font(.system(size: 12, weight: .bold))
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text(loc.tr("island_save_btn", default: "Kaydet"))
+                                    .font(.system(size: 12, weight: .semibold))
                             }
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 14)
+                            .padding(.vertical, 7)
+                            .padding(.horizontal, 16)
                             .foregroundColor(.white)
                             .background(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(LinearGradient(colors: [Color(red: 0.98, green: 0.18, blue: 0.38), Color.purple], startPoint: .leading, endPoint: .trailing))
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(Color(red: 0.98, green: 0.18, blue: 0.38))
                             )
-                            .shadow(color: Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.35), radius: 6, x: 0, y: 2)
                         }
                         .buttonStyle(.plain)
-                        .help("Seçili müzik ritim efektini klavyeye gönderir")
+                        .help("Seçili müzik ritim efektini klavyeye kaydeder")
                     }
 
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 200), spacing: 14)], spacing: 14) {
