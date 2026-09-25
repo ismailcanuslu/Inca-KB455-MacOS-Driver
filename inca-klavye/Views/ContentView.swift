@@ -232,61 +232,33 @@ struct ContentView: View {
         }
     }
     .toolbar {
-            ToolbarItemGroup(placement: .navigation) {
-                // Yan Menüyü Aç / Kapat Butonu
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        columnVisibility = (columnVisibility == .detailOnly) ? .all : .detailOnly
-                    }
-                }) {
-                    Image(systemName: "sidebar.leading")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.secondary)
+        // Sol Taraf 1: Info (Bilgi / Hakkında) Butonu
+        ToolbarItem(placement: .navigation) {
+            Button(action: {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    selectedTab = .about
                 }
-                .buttonStyle(.plain)
-                .help(columnVisibility == .all ? loc.tr("tc_hide_sidebar", default: "Kenar Çubuğunu Gizle") : loc.tr("tc_show_sidebar", default: "Kenar Çubuğunu Göster"))
-
-                // Bilgi (Info / Hakkında) Butonu
-                Button(action: {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        selectedTab = .about
-                    }
-                }) {
-                    Image(systemName: selectedTab == .about ? "info.circle.fill" : "info.circle")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
-                }
-                .buttonStyle(.plain)
-                .help(loc.tr("tc_about", default: "Hakkında"))
+            }) {
+                Image(systemName: selectedTab == .about ? "info.circle.fill" : "info.circle")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
+                    .frame(width: 28, height: 28)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.12) : Color.clear)
+                    )
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .help(loc.tr("tc_about", default: "Hakkında"))
+        }
 
-            ToolbarItem(placement: .principal) {
-                // Dinamik ada üstte bağımsız yüzdüğü için merkez boşluğu koruma alanı
-                Color.clear
-                    .frame(width: 220, height: 28)
-            }
-
-            ToolbarItemGroup(placement: .automatic) {
-                // 1. Hızlı Dil Seçeneği
-                Menu {
-                    ForEach(AppLanguage.allCases) { lang in
-                        Button(action: { loc.setLanguage(lang) }) {
-                            HStack {
-                                Text(lang.displayName)
-                                if loc.currentLanguage == lang { Image(systemName: "checkmark") }
-                            }
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "globe")
-                        Text(loc.currentLanguage.code)
-                            .font(.system(size: 11, weight: .bold))
-                    }
-                }
-
-                // 2. Döner Tekerlek (Knob) Modu Rozeti
-                if keyboardManager.isConnected {
+        // Sol Taraf 2: Döner Tekerlek (Knob) Modu Rozet Butonu (Info'nun hemen sağında, bağımsız buton)
+        ToolbarItem(placement: .navigation) {
+            if keyboardManager.isConnected {
+                Button(action: {
+                    // Tekerlek modu göstergesi (tıklanabilir bağımsız buton)
+                }) {
                     HStack(spacing: 5) {
                         Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
                             .font(.system(size: 11))
@@ -300,9 +272,41 @@ struct ContentView: View {
                     .cornerRadius(7)
                     .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.white.opacity(0.12), lineWidth: 1))
                 }
+                .buttonStyle(.plain)
+                .help(keyboardManager.wheelMode == .volume 
+                    ? "Döner Tekerlek: Ses Kontrolü (Fn+Tekerlek ile Aydınlatma moduna geçer)"
+                    : "Döner Tekerlek: Aydınlatma Kontrolü (Fn+Tekerlek ile Ses moduna geçer)")
+            }
+        }
 
-                // 3. Canlı Batarya Durumu Rozeti
-                if keyboardManager.isConnected {
+        // Sağ Taraf 1: Hızlı Dil Seçeneği
+        ToolbarItem(placement: .automatic) {
+            Menu {
+                ForEach(AppLanguage.allCases) { lang in
+                    Button(action: { loc.setLanguage(lang) }) {
+                        HStack {
+                            Text(lang.displayName)
+                            if loc.currentLanguage == lang { Image(systemName: "checkmark") }
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "globe")
+                    Text(loc.currentLanguage.code)
+                        .font(.system(size: 11, weight: .bold))
+                }
+            }
+        }
+
+        // Sağ Taraf 2: Canlı Batarya Butonu (Bağımsız Buton)
+        ToolbarItem(placement: .automatic) {
+            if keyboardManager.isConnected {
+                Button(action: {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        selectedTab = .settings
+                    }
+                }) {
                     if keyboardManager.batteryLevel >= 100 && keyboardManager.isCharging {
                         HStack(spacing: 5) {
                             Image(systemName: "checkmark.circle.fill")
@@ -349,21 +353,32 @@ struct ContentView: View {
                         .cornerRadius(8)
                     }
                 }
-
-                // 4. Soru İşareti - Kullanma Kılavuzu & Donanım Kısayolları (Yardım)
-                Button(action: {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        selectedTab = .manual
-                    }
-                }) {
-                    Image(systemName: selectedTab == .manual ? "questionmark.circle.fill" : "questionmark.circle")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(selectedTab == .manual ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
-                }
                 .buttonStyle(.plain)
-                .help(loc.tr("tc_manual", default: "Kullanma Kılavuzu & Donanım Kısayolları"))
+                .help("Batarya Seviyesi: %\(keyboardManager.batteryLevel) (Ayarlar için tıklayın)")
             }
         }
+
+        // Sağ Taraf 3: Yardım (Kullanma Kılavuzu & Donanım Kısayolları) Butonu (Bağımsız Buton)
+        ToolbarItem(placement: .automatic) {
+            Button(action: {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    selectedTab = .manual
+                }
+            }) {
+                Image(systemName: selectedTab == .manual ? "questionmark.circle.fill" : "questionmark.circle")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(selectedTab == .manual ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
+                    .frame(width: 28, height: 28)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(selectedTab == .manual ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.12) : Color.clear)
+                    )
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(loc.tr("tc_manual", default: "Kullanma Kılavuzu & Donanım Kısayolları"))
+        }
+    }
         .tint(Color(red: 0.98, green: 0.18, blue: 0.38)) // Apple Music Pink
         .animation(.easeInOut(duration: 0.25), value: keyboardManager.isConnected)
 
