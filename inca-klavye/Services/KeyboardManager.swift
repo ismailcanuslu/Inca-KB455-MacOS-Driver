@@ -19,7 +19,6 @@ class KeyboardManager: ObservableObject {
 
     private var hidManager: IOHIDManager?
     private var keyboardDevice: IOHIDDevice?
-    private let bleBatteryDiscovery = BLEBatteryDiscovery()
     
     // Inca Klavye Donanım Tanımlayıcıları (KB.ini ve OemDrv.exe)
     // 1. Kablosuz Alıcı (2.4G): VID: 13652 (0x3554), PID: 64009 (0xFA09), UsagePage: 0xFF02
@@ -53,9 +52,6 @@ class KeyboardManager: ObservableObject {
     @Published var lastHardwareConfig: String = "-"
     @Published var hidDescriptorSummary: String = "Henüz bir HID arayüzü seçilmedi."
     @Published var configLoadStatus: String = "Config Load henüz çalıştırılmadı."
-    @Published var bleBatteryStatus: String = "BLE batarya endpoint'i henüz taranmadı."
-    @Published var bleBatteryEndpoint: String = "-"
-    @Published var lastBLEValue: String = "-"
     @Published var batteryLevel: Int = 85
     @Published var isCharging: Bool = false
     @Published var isMacMode: Bool = true
@@ -290,7 +286,6 @@ class KeyboardManager: ObservableObject {
         }
         let inputMonitoringGranted = checkInputMonitoringPermission()
         setupHIDManager()
-        configureBLEBatteryDiscovery()
         if inputMonitoringGranted {
             startPassiveInputMonitoringProbe()
         } else if !UserDefaults.standard.bool(forKey: inputMonitoringPromptRequestedKey) {
@@ -302,30 +297,7 @@ class KeyboardManager: ObservableObject {
         }
     }
 
-    private func configureBLEBatteryDiscovery() {
-        bleBatteryDiscovery.onStatus = { [weak self] status in
-            Self.log("📡 [BLE] \(status)")
-            DispatchQueue.main.async { self?.bleBatteryStatus = status }
-        }
-        bleBatteryDiscovery.onValue = { [weak self] endpoint, hex in
-            Self.log("📥 [BLE] \(endpoint): \(hex)")
-            DispatchQueue.main.async { self?.lastBLEValue = "\(endpoint): \(hex)" }
-        }
-        bleBatteryDiscovery.onBattery = { [weak self] percent, endpoint in
-            Self.log("🔋 [BLE Batarya] %\(percent) — \(endpoint)")
-            DispatchQueue.main.async {
-                self?.batteryLevel = percent
-                self?.bleBatteryEndpoint = endpoint
-            }
-        }
-        bleBatteryDiscovery.start()
-    }
 
-    /// Restarts the read-only BLE scan when the keyboard is switched to its
-    /// Bluetooth profile or when a new endpoint capture is needed.
-    func scanBLEBatteryEndpoint() {
-        bleBatteryDiscovery.start()
-    }
 
     @discardableResult
     func checkInputMonitoringPermission() -> Bool {

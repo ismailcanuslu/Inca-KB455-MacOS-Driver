@@ -109,20 +109,6 @@ struct DynamicIslandFloatingView: View {
                 .fill(Color.black.opacity(0.88))
                 .background(.ultraThinMaterial, in: Capsule())
         )
-        .overlay(
-            Capsule()
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(isHovered ? 0.28 : 0.15),
-                            Color.white.opacity(0.06)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
         .shadow(color: Color.black.opacity(0.4), radius: 8, x: 0, y: 3)
         .scaleEffect(isHovered ? 1.02 : 1.0)
         .onHover { hovering in

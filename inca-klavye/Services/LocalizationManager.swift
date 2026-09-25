@@ -40,7 +40,7 @@ class LocalizationManager: ObservableObject {
         "about_protocols_val": [.turkish: "Type-C Kablolu • 2.4G Kablosuz • Bluetooth 5.0", .english: "Type-C Wired • 2.4G Wireless • Bluetooth 5.0", .german: "Type-C Kabelgebunden • 2.4G Kabellos • Bluetooth 5.0"],
         "about_supported_protocols": [.turkish: "Desteklenen Protokoller", .english: "Supported Protocols", .german: "Unterstützte Protokolle"],
         "about_target_hw": [.turkish: "Hedef Donanım", .english: "Target Hardware", .german: "Zielhardware"],
-        "about_version": [.turkish: "Sürüm 1.0.0 (Build 2026.1)", .english: "Version 1.0.0 (Build 2026.1)", .german: "Version 1.0.0 (Build 2026.1)"],
+        "about_version": [.turkish: "Sürüm 0.8.1 (Build 2026.1)", .english: "Version 0.8.1 (Build 2026.1)", .german: "Version 0.8.1 (Build 2026.1)"],
         "color_blue": [.turkish: "Mavi", .english: "Blue", .german: "Blau"],
         "color_cyan": [.turkish: "Açık Mavi (Cyan)", .english: "Cyan", .german: "Cyan"],
         "color_green": [.turkish: "Yeşil", .english: "Green", .german: "Grün"],

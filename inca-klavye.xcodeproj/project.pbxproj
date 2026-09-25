@@ -279,7 +279,6 @@
 				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
 				INFOPLIST_KEY_CFBundleName = "Inca Empousa";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Inca Empousa, klavyenin batarya durumunu okumak için Bluetooth kullanır.";
 				INFOPLIST_KEY_NSInputMonitoringUsageDescription = "Inca Empousa klavye donanım kontrolcüsüne erişmek ve aydınlatma ayarlarını uygulamak için Giriş İzleme izni gereklidir.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -295,7 +294,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.6.0;
+				MARKETING_VERSION = 0.8.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ismailcanuslu.empousa;
 				PRODUCT_NAME = "Inca Empousa";
 				REGISTER_APP_GROUPS = YES;
@@ -328,7 +327,6 @@
 				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
 				INFOPLIST_KEY_CFBundleName = "Inca Empousa";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Inca Empousa, klavyenin batarya durumunu okumak için Bluetooth kullanır.";
 				INFOPLIST_KEY_NSInputMonitoringUsageDescription = "Inca Empousa klavye donanım kontrolcüsüne erişmek ve aydınlatma ayarlarını uygulamak için Giriş İzleme izni gereklidir.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -344,7 +342,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.6.0;
+				MARKETING_VERSION = 0.8.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ismailcanuslu.empousa;
 				PRODUCT_NAME = "Inca Empousa";
 				REGISTER_APP_GROUPS = YES;

@@ -54,8 +54,8 @@ struct NoDeviceConnectedView: View {
 
                 connectionCard(
                     icon: "dot.radiowaves.left.and.right",
-                    title: "Bluetooth",
-                    desc: "Fn + 1/2/3 tuşlarıyla Mac'inizin Bluetooth menüsünden eşleştirin."
+                    title: "Bluetooth (Sadece Yazım)",
+                    desc: "Fn + 1/2/3 ile eşleştirin. Aydınlatma ve ayar değişikliği için USB veya 2.4G kullanın."
                 )
             }
             .frame(maxWidth: 720)

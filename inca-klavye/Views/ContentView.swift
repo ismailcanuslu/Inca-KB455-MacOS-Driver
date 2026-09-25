@@ -232,22 +232,32 @@ struct ContentView: View {
         }
     }
     .toolbar {
-            ToolbarItem(placement: .navigation) {
-                // Döner Tekerlek (Knob) Modu Rozeti (Soru işareti veya info balonu olmadan, bağımsız rozet)
-                if keyboardManager.isConnected {
-                    HStack(spacing: 5) {
-                        Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
-                        Text(keyboardManager.wheelMode.badgeTitle(loc: loc))
-                            .font(.system(size: 11, weight: .semibold))
+            ToolbarItemGroup(placement: .navigation) {
+                // Yan Menüyü Aç / Kapat Butonu
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        columnVisibility = (columnVisibility == .detailOnly) ? .all : .detailOnly
                     }
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 4.5)
-                    .background(Color.white.opacity(0.08))
-                    .cornerRadius(7)
-                    .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.white.opacity(0.12), lineWidth: 1))
+                }) {
+                    Image(systemName: "sidebar.leading")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.secondary)
                 }
+                .buttonStyle(.plain)
+                .help(columnVisibility == .all ? loc.tr("tc_hide_sidebar", default: "Kenar Çubuğunu Gizle") : loc.tr("tc_show_sidebar", default: "Kenar Çubuğunu Göster"))
+
+                // Bilgi (Info / Hakkında) Butonu
+                Button(action: {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        selectedTab = .about
+                    }
+                }) {
+                    Image(systemName: selectedTab == .about ? "info.circle.fill" : "info.circle")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
+                }
+                .buttonStyle(.plain)
+                .help(loc.tr("tc_about", default: "Hakkında"))
             }
 
             ToolbarItem(placement: .principal) {
@@ -257,20 +267,7 @@ struct ContentView: View {
             }
 
             ToolbarItemGroup(placement: .automatic) {
-                // Soru İşareti - Kullanma Kılavuzu & Donanım Kısayolları
-                Button(action: {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        selectedTab = .manual
-                    }
-                }) {
-                    Image(systemName: selectedTab == .manual ? "questionmark.circle.fill" : "questionmark.circle")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(selectedTab == .manual ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
-                }
-                .buttonStyle(.plain)
-                .help(loc.tr("tc_manual", default: "Kullanma Kılavuzu & Donanım Kısayolları"))
-
-                // Hızlı Dil Değiştirici
+                // 1. Hızlı Dil Seçeneği
                 Menu {
                     ForEach(AppLanguage.allCases) { lang in
                         Button(action: { loc.setLanguage(lang) }) {
@@ -288,7 +285,23 @@ struct ContentView: View {
                     }
                 }
 
-                // Canlı Batarya Durumu Rozeti
+                // 2. Döner Tekerlek (Knob) Modu Rozeti
+                if keyboardManager.isConnected {
+                    HStack(spacing: 5) {
+                        Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
+                        Text(keyboardManager.wheelMode.badgeTitle(loc: loc))
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4.5)
+                    .background(Color.white.opacity(0.08))
+                    .cornerRadius(7)
+                    .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.white.opacity(0.12), lineWidth: 1))
+                }
+
+                // 3. Canlı Batarya Durumu Rozeti
                 if keyboardManager.isConnected {
                     if keyboardManager.batteryLevel >= 100 && keyboardManager.isCharging {
                         HStack(spacing: 5) {
@@ -336,6 +349,19 @@ struct ContentView: View {
                         .cornerRadius(8)
                     }
                 }
+
+                // 4. Soru İşareti - Kullanma Kılavuzu & Donanım Kısayolları (Yardım)
+                Button(action: {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        selectedTab = .manual
+                    }
+                }) {
+                    Image(systemName: selectedTab == .manual ? "questionmark.circle.fill" : "questionmark.circle")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(selectedTab == .manual ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
+                }
+                .buttonStyle(.plain)
+                .help(loc.tr("tc_manual", default: "Kullanma Kılavuzu & Donanım Kısayolları"))
             }
         }
         .tint(Color(red: 0.98, green: 0.18, blue: 0.38)) // Apple Music Pink
