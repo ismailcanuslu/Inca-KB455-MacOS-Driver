@@ -232,57 +232,60 @@ struct ContentView: View {
         }
     }
     .toolbar {
-        // Sol Taraf: Info Butonu ve hemen sağında boşluklu Döner Tekerlek (Knob) Butonu
+        // 1. Sol: Info (Bilgi / Hakkında) Butonu (Ayrı bağımsız ToolbarItem)
         ToolbarItem(placement: .navigation) {
-            HStack(spacing: 12) {
-                // Info (Bilgi / Hakkında) Butonu
+            Button(action: {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    selectedTab = .about
+                }
+            }) {
+                Image(systemName: selectedTab == .about ? "info.circle.fill" : "info.circle")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
+                    .frame(width: 28, height: 28)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.12) : Color.white.opacity(0.06))
+                    )
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(loc.tr("tc_about", default: "Hakkında"))
+        }
+
+        // 2. Sol: Döner Tekerlek (Knob) Butonu (Info'dan bağımsız ayrı bir ToolbarItem)
+        ToolbarItem(placement: .navigation) {
+            if keyboardManager.isConnected {
                 Button(action: {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        selectedTab = .about
-                    }
+                    // Tekerlek modu göstergesi
                 }) {
-                    Image(systemName: selectedTab == .about ? "info.circle.fill" : "info.circle")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38) : .secondary)
-                        .frame(width: 28, height: 28)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(selectedTab == .about ? Color(red: 0.98, green: 0.18, blue: 0.38).opacity(0.12) : Color.white.opacity(0.06))
-                        )
-                        .contentShape(Rectangle())
+                    HStack(spacing: 5) {
+                        Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
+                        Text(keyboardManager.wheelMode.badgeTitle(loc: loc))
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4.5)
+                    .background(Color.white.opacity(0.08))
+                    .cornerRadius(7)
+                    .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.white.opacity(0.12), lineWidth: 1))
                 }
                 .buttonStyle(.plain)
-                .help(loc.tr("tc_about", default: "Hakkında"))
-
-                // Döner Tekerlek (Knob) Modu Rozet Butonu (Ayrı bağımsız buton, arada net boşluk)
-                if keyboardManager.isConnected {
-                    Button(action: {
-                        // Tekerlek modu göstergesi
-                    }) {
-                        HStack(spacing: 5) {
-                            Image(systemName: keyboardManager.wheelMode == .volume ? "speaker.wave.2.fill" : "sun.max.fill")
-                                .font(.system(size: 11))
-                                .foregroundColor(keyboardManager.wheelMode == .volume ? .blue : .yellow)
-                            Text(keyboardManager.wheelMode.badgeTitle(loc: loc))
-                                .font(.system(size: 11, weight: .semibold))
-                        }
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4.5)
-                        .background(Color.white.opacity(0.08))
-                        .cornerRadius(7)
-                        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.white.opacity(0.12), lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
-                    .help(keyboardManager.wheelMode == .volume 
-                        ? "Döner Tekerlek: Ses Kontrolü (Fn+Tekerlek ile Aydınlatma moduna geçer)"
-                        : "Döner Tekerlek: Aydınlatma Kontrolü (Fn+Tekerlek ile Ses moduna geçer)")
-                }
+                .help(keyboardManager.wheelMode == .volume 
+                    ? "Döner Tekerlek: Ses Kontrolü (Fn+Tekerlek ile Aydınlatma moduna geçer)"
+                    : "Döner Tekerlek: Aydınlatma Kontrolü (Fn+Tekerlek ile Ses moduna geçer)")
             }
         }
 
-        // Sağ Taraf: En sağda Yardım Butonu, hemen solunda Dil Seçici
-        ToolbarItemGroup(placement: .primaryAction) {
-            // Dil Seçici (Yardım butonunun hemen solunda)
+        // 3. Esnek Boşluk (macOS Flexible Space - Sağdaki elemanları pencerenin EN SAĞINA iter)
+        ToolbarItem {
+            Spacer()
+        }
+
+        // 4. Sağ: Dil Seçici (Yardım butonunun hemen solunda)
+        ToolbarItem {
             Menu {
                 ForEach(AppLanguage.allCases) { lang in
                     Button(action: { loc.setLanguage(lang) }) {
@@ -299,8 +302,10 @@ struct ContentView: View {
                         .font(.system(size: 11, weight: .bold))
                 }
             }
+        }
 
-            // Yardım (Kullanma Kılavuzu & Donanım Kısayolları) Butonu (En Sağda)
+        // 5. Sağ: Yardım Butonu (En Sağda)
+        ToolbarItem {
             Button(action: {
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                     selectedTab = .manual
