@@ -281,7 +281,7 @@ struct ContentView: View {
         }
 
         // Sağ Taraf: En sağda Yardım Butonu, hemen solunda Dil Seçici
-        ToolbarItemGroup(placement: .automatic) {
+        ToolbarItemGroup(placement: .primaryAction) {
             // Dil Seçici (Yardım butonunun hemen solunda)
             Menu {
                 ForEach(AppLanguage.allCases) { lang in
